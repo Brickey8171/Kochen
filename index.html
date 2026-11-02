@@ -484,13 +484,14 @@ const DIETS=[['keine','Keine','utensils'],['veg','Vegetarisch','leaf'],['vegan',
 const DISLIKES=[['pk','Schwein','meat'],['bf','Rind','meat'],['la','Lamm','meat'],['mu','Champignons','mushroom'],['s','Meeresfrüchte','shell'],['ol','Oliven','olive'],['hot','Scharfes Essen','flame'],['to','Tofu','cube'],['au','Melanzani','eggplant'],['co','Kokos','coconut'],['kz','Koriander','herb']];
 const ALLERGIES=[['pn','Erdnüsse','peanut'],['n','Nüsse','acorn'],['d','Milchprodukte','milk'],['e','Eier','egg'],['gl','Weizen / Gluten','wheat'],['so','Soja','bean'],['f','Fisch','fish'],['s','Schalentiere','shell'],['se','Sesam','seeds']];
 const TOOLS=[['herd','Herd','stove'],['backofen','Backofen','oven'],['airfryer','Heißluftfritteuse','airfryer'],['mixer','Mixer / Pürierstab','blender']];
+const TIMES=[[0,'Egal'],[20,'Bis 20 Min'],[30,'Bis 30 Min'],[45,'Bis 45 Min'],[60,'Bis 60 Min']];
 const DAYN=['Mo','Di','Mi','Do','Fr','Sa','So'];
 const DAYL=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
 const PLAN_CATS=new Set(['Beef','Chicken','Lamb','Pork','Seafood','Pasta','Vegetarian','Vegan','Goat','Miscellaneous']);
 const UNK=1.0; // Schätzung für unbekannte Zutaten (€ pro Woche)
 
 /* ---------- Zustand ---------- */
-const DEF={screen:'ob',ob:0,plz:'',shops:[],adults:2,kids:0,days:[0,1,2,3,4],budget:60,appetite:[],diet:'keine',dislikes:[],allergies:[],tools:['herd','backofen'],reste:false,pantry:true,
+const DEF={screen:'ob',ob:0,plz:'',shops:[],adults:2,kids:0,days:[0,1,2,3,4],budget:60,appetite:[],diet:'keine',dislikes:[],allergies:[],tools:['herd','backofen'],maxTime:0,reste:false,pantry:true,
   tab:'plan',plan:[],planStore:null,checked:{},favs:[],autoTr:true,exCat:'',exQ:'',exAll:false,exN:40};
 let S=Object.assign({},DEF);
 const ls={get(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}};
@@ -683,6 +684,7 @@ function eligible(r){
   if(S.diet==='veg'&&(r.flags.has('m')||r.flags.has('f')||r.flags.has('s')))return false;
   if(S.diet==='vegan'&&['m','f','s','d','e','an'].some(f=>r.flags.has(f)))return false;
   if(S.diet==='pesc'&&r.flags.has('m'))return false;
+  if(S.maxTime&&r.time>S.maxTime)return false;
   if(S.dislikes.some(f=>r.flags.has(f)))return false;
   if(S.allergies.some(f=>r.flags.has(f)))return false;
   if(r.tools.has('herd')&&!S.tools.includes('herd'))return false;
@@ -772,7 +774,7 @@ function stepKind(t){t=t.toLowerCase();
 
 /* ---------- Rendering ---------- */
 const app=document.getElementById('app');
-const OB=['plz','locate','shops','who','days','budget','appetite','diet','dislikes','allergies','kitchen'];
+const OB=['plz','locate','shops','who','days','budget','appetite','time','diet','dislikes','allergies','kitchen'];
 function render(){
   let h='';
   if(S.screen==='ob')h=renderOb();else if(S.screen==='loading')h=renderLoading();else h=renderMain();
@@ -810,6 +812,7 @@ function renderOb(){
     <div class="bignum" id="bn">${S.budget} €</div><p class="muted small" style="text-align:center">pro Woche</p>
     <input type="range" id="budget" min="15" max="250" step="1" value="${S.budget}"><div class="row between tiny muted"><span>15 €</span><span>250 €</span></div>`,'Weiter',true);
   if(s==='appetite')return obShell(`<h1>Worauf hast du Appetit?</h1><p class="sub">Wähle bis zu 3.</p>${tiles(APPETITE,S.appetite,'app')}`,'Weiter',true);
+  if(s==='time')return obShell(`<h1>Wie viel Zeit hast du zum Kochen?</h1><p class="sub">Wir zeigen nur Rezepte, die in dieser Zeit fertig sind. Die Zeit wird aus der Anleitung geschätzt.</p><div class="grid2 list-tiles" style="grid-template-columns:1fr">${TIMES.map(([v,n])=>`<button class="tile ${S.maxTime===v?'on':''}" data-a="maxTime" data-v="${v}"><span class="e">${ic('clock')}</span>${n}</button>`).join('')}</div>`,'Weiter',true);
   if(s==='diet')return obShell(`<h1>Besondere Ernährungsweise?</h1><p class="sub">Wir zeigen nur passende Rezepte.</p>${tiles(DIETS,[S.diet],'diet')}`,'Weiter',true);
   if(s==='dislikes')return obShell(`<h1>Gibt es etwas, das du nicht isst?</h1><p class="sub">Wähle alles aus, was nicht auf den Teller soll.</p>${tiles(DISLIKES,S.dislikes,'dis','list-tiles')}`,S.dislikes.length?'Weiter':'Ich esse alles',true);
   if(s==='allergies')return obShell(`<h1>Allergien?</h1><p class="sub">Rezepte mit diesen Zutaten schließen wir aus. Prüfe trotzdem immer die Zutatenliste.</p>${tiles(ALLERGIES,S.allergies,'all')}`,S.allergies.length?'Weiter':'Keine Allergien — weiter',true);
@@ -926,12 +929,13 @@ function renderFavs(){
 function renderProfile(){
   const lst=liveStores();
   const sum=[['PLZ',`${S.plz} · ${region(S.plz)}`],['Supermärkte',S.shops.map(s=>storeById(s).n).join(', ')],['Personen',`${S.adults} Erw.${S.kids?`, ${S.kids} Kinder`:''}`],
-    ['Kochtage',S.days.slice().sort().map(d=>DAYN[d]).join(', ')],['Budget',S.budget+' € / Woche'],['Ernährung',DIETS.find(d=>d[0]===S.diet)[1]],
+    ['Kochtage',S.days.slice().sort().map(d=>DAYN[d]).join(', ')],['Budget',S.budget+' € / Woche'],['Kochzeit',TIMES.find(t=>t[0]===S.maxTime)[1]],['Ernährung',DIETS.find(d=>d[0]===S.diet)[1]],
     ['Isst nicht',S.dislikes.map(d=>DISLIKES.find(x=>x[0]===d)[1]).join(', ')||'–'],['Allergien',S.allergies.map(d=>ALLERGIES.find(x=>x[0]===d)[1]).join(', ')||'–'],
     ['Küche',S.tools.map(t=>TOOLS.find(x=>x[0]===t)[1]).join(', ')]];
   return `<h1>Profil</h1>
   <div class="card">${sum.map(([k,v])=>`<div class="row between" style="padding:5px 0;border-bottom:1px solid var(--line)"><span class="muted small">${k}</span><span class="small" style="text-align:right">${esc(v)}</span></div>`).join('')}
     <button class="btn" style="margin-top:14px" data-a="toOb">Fragen neu beantworten</button></div>
+  <div class="card"><h3>${ic('clock')} Maximale Kochzeit</h3><p class="small muted" style="margin:4px 0 10px">Gilt für Wochenplan und Entdecken. Der Plan wird neu erstellt.</p><div class="seg">${TIMES.map(([v,n])=>`<button class="${S.maxTime===v?'on':''}" data-a="maxTime" data-v="${v}">${v?v+' Min':'Egal'}</button>`).join('')}</div></div>
   <div class="card"><h3>Preise</h3>
     <p class="small">${LIVE?`Live-Preise vom ${new Date(LIVE.t).toLocaleDateString('de-AT')}: ${lst.length?lst.map(s=>storeById(s).n).join(', '):'keiner deiner Shops enthalten'}.`:'Aktuell werden Schätzpreise verwendet.'}
     ${S.shops.filter(s=>!lst.includes(s)).length?`<br><span class="muted">Geschätzt: ${S.shops.filter(s=>!lst.includes(s)).map(s=>storeById(s).n).join(', ')}</span>`:''}${UI.priceMsg?`<br><span class="bad">Laden fehlgeschlagen: ${esc(UI.priceMsg)}</span>`:''}</p>
@@ -1018,6 +1022,7 @@ app.addEventListener('click',async e=>{
     case 'day':S.days=tog(S.days,+v);break;
     case 'app':if(S.appetite.includes(v))S.appetite=S.appetite.filter(x=>x!==v);else if(S.appetite.length<3)S.appetite=S.appetite.concat(v);else toast('Maximal 3');break;
     case 'diet':S.diet=v;break;
+    case 'maxTime':S.maxTime=+v;if(S.screen==='main'&&MEALS.length){generatePlan();toast(S.plan.length?'Plan neu erstellt':'Keine Rezepte in dieser Zeit');translateTitles(S.plan.map(x=>RM[x.rid]));}break;
     case 'dis':S.dislikes=tog(S.dislikes,v);break;
     case 'all':S.allergies=tog(S.allergies,v);break;
     case 'tool':S.tools=tog(S.tools,v);break;
