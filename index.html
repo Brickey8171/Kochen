@@ -565,6 +565,13 @@ function deriveMeal(m){
     deftig:/British|Irish|Polish|Russian|Ukrainian|Dutch|Croatian/.test(m.area)||/stew|goulash|schnitzel|dumpling|casserole|pie\b|hotpot|roast|sausage/.test(n)
   };
   r.steps=splitSteps(m.ins);
+  // Ist das eine richtige Mahlzeit? (keine Öle, Saucen, Gewürzmischungen, Getränke …)
+  let mass=0;
+  for(const g of r.ingr){if(!g.id||g.tiny)continue;const I=DB[g.id];if(I.f.includes('p')||I.aisle==='gw'||I.aisle==='ge')continue;
+    mass+=I.u==='stk'?g.amt*I.w:I.u==='ml'?g.amt*I.d:g.amt;}
+  const cond=/\b(oil|sauce|dressing|marinade|stock|broth|paste|seasoning|spice|spices|rub|dip|salsa|chutney|pickles?|pickled|jam|jelly|syrup|gravy|butter|mayo|mayonnaise|ketchup|pesto|vinaigrette|glaze|relish|aioli|hummus|guacamole|sofrito|condiment|dough|cocktail|drink|smoothie|tea|coffee|lemonade|juice|punch|masala|blend|powder|ghee|cream|frosting|icing|custard)\b/.test(n);
+  const dish=/\bwith\b|\bin\b|chicken|beef|pork|lamb|fish|salmon|prawn|pasta|spaghetti|noodle|rice|curry|stew|soup|pie|burger|steak|tacos?|wraps?|potato|beans|lentil|egg|tofu|casserole|bake|risotto|gnocchi|dumpling|chilli|chili/.test(n);
+  r.meal=r.ingr.length>=4&&mass>=300&&!(cond&&!dish);
   return r;
 }
 function setMeals(list){MEALS=list.map(deriveMeal);RM={};MEALS.forEach(r=>RM[r.id]=r);}
@@ -694,7 +701,7 @@ function eligible(r){
   if(r.tools.has('mixer')&&!S.tools.includes('mixer'))return false;
   return true;
 }
-const forPlan=r=>PLAN_CATS.has(r.cat)&&eligible(r);
+const forPlan=r=>r.meal&&PLAN_CATS.has(r.cat)&&eligible(r);
 function score(r){return 1+3*S.appetite.filter(a=>r.app[a]).length;}
 function tagOf(r){
   const a=S.appetite.find(x=>r.app[x])||APPETITE.map(x=>x[0]).find(x=>r.app[x]);
@@ -808,9 +815,9 @@ function renderOb(){
   if(s==='who')return obShell(`<h1>Für wen kochst du?</h1><p class="sub">Die Portionen passen wir automatisch an.</p>
     <div class="card"><p class="muted small" style="text-align:center;margin:0 0 10px">Erwachsene</p><div class="stepper"><button data-a="dec" data-k="adults">−</button><b>${S.adults}</b><button data-a="inc" data-k="adults">+</button></div></div>
     <div class="card"><p class="muted small" style="text-align:center;margin:0 0 10px">Kinder</p><div class="stepper"><button data-a="dec" data-k="kids">−</button><b>${S.kids}</b><button data-a="inc" data-k="kids">+</button></div></div>`,'Weiter',S.adults>0);
-  if(s==='days')return obShell(`<h1>An welchen Tagen kochst du normalerweise?</h1><p class="sub">Wir planen nur Abendessen für diese Tage.</p>
+  if(s==='days')return obShell(`<h1>An welchen Tagen kochst du normalerweise?</h1><p class="sub">Wir planen nur Mahlzeiten für diese Tage.</p>
     <div class="days">${DAYN.map((d,i)=>`<button class="${S.days.includes(i)?'on':''}" data-a="day" data-v="${i}">${d}<i>${S.days.includes(i)?ic('check'):''}</i></button>`).join('')}</div>`,'Weiter',S.days.length>0);
-  if(s==='budget')return obShell(`<h1>Wie hoch ist dein Wochenbudget?</h1><p class="sub">Für ${S.days.length} Abendessen und ${persons()} ${persons()===1?'Person':'Personen'}.</p>
+  if(s==='budget')return obShell(`<h1>Wie hoch ist dein Wochenbudget?</h1><p class="sub">Für ${S.days.length} ${S.days.length===1?'Mahlzeit':'Mahlzeiten'} und ${persons()} ${persons()===1?'Person':'Personen'}.</p>
     <div class="bignum" id="bn">${S.budget} €</div><p class="muted small" style="text-align:center">pro Woche</p>
     <input type="range" id="budget" min="15" max="250" step="1" value="${S.budget}"><div class="row between tiny muted"><span>15 €</span><span>250 €</span></div>`,'Weiter',true);
   if(s==='appetite')return obShell(`<h1>Worauf hast du Appetit?</h1><p class="sub">Wähle bis zu 3.</p>${tiles(APPETITE,S.appetite,'app')}`,'Weiter',true);
@@ -884,7 +891,7 @@ function renderPlan(){
     <svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="34" fill="none" stroke="var(--line)" stroke-width="8"/>
       <circle cx="42" cy="42" r="34" fill="none" stroke="${over?'var(--red)':'var(--yellow)'}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*pct} ${C}" transform="rotate(-90 42 42)"/>
       <text x="42" y="47" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-weight="700" font-size="16" fill="var(--ink)">${eurR(tot)}</text></svg>
-    <div class="grow"><h3>Plankosten</h3><div class="small muted">${cooks} Mal kochen, ${S.plan.length} Abendessen für ${eurR(tot)}</div>
+    <div class="grow"><h3>Plankosten</h3><div class="small muted">${cooks} Mal kochen, ${S.plan.length} ${S.plan.length===1?'Mahlzeit':'Mahlzeiten'} für ${eurR(tot)}</div>
       <div class="small ${over?'bad':'ok'}">${ic(over?'x':'check')} Budget: ${S.budget} €${over?` (${eurR(tot-S.budget)} drüber)`:''}</div>
       ${cmp.length>1?`<details class="small" style="margin-top:6px"><summary class="muted" style="cursor:pointer">Deine Shops vergleichen</summary><div class="cmp" style="margin-top:6px">${cmp.map((x,i)=>`<span class="${i===0?'best':''}">${storeById(x.s).n}${liveStores().includes(x.s)?'<span class="livedot" title="Live-Preise"></span>':''}</span><span class="${i===0?'best':''}">${eur(x.c)}</span>`).join('')}</div></details>`:''}
     </div>
@@ -902,7 +909,7 @@ function renderPlan(){
 }
 function exploreList(){
   const q=S.exQ.trim().toLowerCase();
-  let rs=MEALS.filter(r=>(S.exAll||eligible(r))&&(!S.exCat||r.app[S.exCat]));
+  let rs=MEALS.filter(r=>(S.exAll||(eligible(r)&&r.meal))&&(!S.exCat||r.app[S.exCat]));
   if(q)rs=rs.filter(r=>(r.n+' '+title(r)+' '+r.area+' '+r.ingr.map(g=>g.n+' '+(g.id?DB[g.id].de:'')).join(' ')).toLowerCase().includes(q));
   return rs;
 }
@@ -960,7 +967,7 @@ function renderDetail(){
   <div class="hero">${r.img?`<img src="${r.img}" alt="">`:''}<button class="iconbtn" style="left:14px" data-a="close" aria-label="Zurück">${ic("back")}</button><button class="iconbtn" style="right:14px" data-a="fav" data-v="${r.id}" aria-label="Favorit">${S.favs.includes(r.id)?ic('heartf'):ic('heart')}</button></div>
   <div class="pad">
     <h1>${esc(title(r))}</h1>${TR[r.n]?`<div class="tiny muted">${esc(r.n)}</div>`:''}
-    <div style="margin:6px 0 10px">${tagOf(r)?`<span class="tag">${tagOf(r)}</span>`:''}<span class="tag" style="background:var(--chip);color:var(--muted)">${esc(r.area)}</span><span class="tag" style="background:var(--chip);color:var(--muted)">${esc(r.cat)}</span></div>
+    <div style="margin:6px 0 10px">${tagOf(r)?`<span class="tag">${tagOf(r)}</span>`:''}${r.area&&r.area!=='Unknown'?`<span class="tag" style="background:var(--chip);color:var(--muted)">${esc(r.area)}</span>`:''}<span class="tag" style="background:var(--chip);color:var(--muted)">${esc(r.cat)}</span></div>
     <div class="meta">${ic("clock")} ca. ${r.time} Min | ${ic("user")} ${persons()} ${persons()===1?'Person':'Personen'}</div>
     ${!eligible(r)?`<div class="warn" style="margin-top:10px">Dieses Rezept passt nicht zu deinen Angaben (Ernährung, Allergien oder Küche).</div>`:''}
     ${r.tools.has('backofen')&&!S.tools.includes('backofen')?`<div class="warn" style="margin-top:10px">Braucht einen Backofen. Mit der Heißluftfritteuse geht es meist auch, Zeiten und Mengen ggf. anpassen.</div>`:''}
