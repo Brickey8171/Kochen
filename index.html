@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kochbudget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbf7f1;--card:#ffffff;--ink:#2b211b;--muted:#8a7d72;--line:#eee4d8;
+  --brown:#8b4a2b;--brown-ink:#ffffff;--yellow:#f5c84c;--yellow-soft:#fdf1c9;--yellow-ink:#5a4310;
+  --green:#3f8f5a;--red:#c4513b;--red-soft:#f9e2dc;--chip:#f3ece2;--shadow:0 2px 10px rgba(80,50,20,.08);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#17130f;--card:#221c17;--ink:#f2eae1;--muted:#a89a8c;--line:#352c24;
+  --brown:#c97a50;--brown-ink:#1a0f08;--yellow:#e6b93f;--yellow-soft:#3b3017;--yellow-ink:#f6dc94;
+  --green:#5fbf80;--red:#e57a63;--red-soft:#3d221b;--chip:#2c241d;--shadow:0 2px 10px rgba(0,0,0,.35);
+}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.serif,h1,h2,h3{font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:-.01em}
+#app{max-width:480px;margin:0 auto;min-height:100vh;padding:16px 16px 100px;position:relative}
+h1{font-size:1.75rem;line-height:1.15;margin:.3em 0 .25em}
+h2{font-size:1.3rem;margin:0 0 .4em}
+h3{font-size:1.05rem;margin:0}
+.sub{color:var(--muted);margin:0 0 20px;font-size:.95rem}
+.muted{color:var(--muted)}.small{font-size:.85rem}.tiny{font-size:.75rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.btn{appearance:none;border:0;border-radius:14px;padding:15px 18px;font:inherit;font-weight:600;cursor:pointer;background:var(--brown);color:var(--brown-ink);width:100%}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.y{background:var(--yellow);color:#3a2a06}
+.btn.ghost{background:var(--chip);color:var(--ink)}
+.btn.sm{width:auto;padding:9px 14px;font-size:.9rem;border-radius:11px}
+.row{display:flex;gap:10px;align-items:center}.between{justify-content:space-between}.grow{flex:1;min-width:0}
+.prog{height:4px;background:var(--line);border-radius:4px;margin:4px 0 22px;overflow:hidden}
+.prog span{display:block;height:100%;background:var(--brown);transition:width .3s}
+.back{border:0;background:none;color:var(--muted);font:inherit;padding:4px 0;cursor:pointer}
+.footer{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 30%);z-index:4}
+.footer>div{max-width:448px;margin:0 auto}
+.plz{font:600 2.2rem/1 "Fraunces",Georgia,serif;letter-spacing:.3em;text-align:center;border:0;border-bottom:2px solid var(--line);background:none;color:var(--ink);width:100%;padding:18px 0;outline:none}
+.plz:focus{border-color:var(--brown)}
+.globe{font-size:6rem;text-align:center;margin:60px 0 20px;animation:spin 1.6s ease-in-out infinite}
+@keyframes spin{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:16px;padding:14px 10px;font:inherit;font-size:.88rem;cursor:pointer;text-align:center;position:relative;min-height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.tile .e{font-size:1.6rem}
+.tile.on{border-color:var(--brown);background:var(--yellow-soft)}
+.tile.on::after{content:"✓";position:absolute;top:6px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--brown);color:var(--brown-ink);font-size:.75rem;display:grid;place-items:center}
+.tile:disabled{opacity:.35;cursor:not-allowed}
+.list-tiles .tile{flex-direction:row;justify-content:flex-start;min-height:0;padding:12px 14px;text-align:left}
+.list-tiles .tile .e{font-size:1.2rem}
+.stepper{display:flex;align-items:center;justify-content:center;gap:24px}
+.stepper button{width:48px;height:48px;border-radius:50%;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-size:1.4rem;cursor:pointer}
+.stepper b{font:600 3rem/1 "Fraunces",Georgia,serif;min-width:60px;text-align:center}
+.days{display:flex;gap:6px;justify-content:space-between}
+.days button{flex:1;aspect-ratio:1/1.25;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:600 .9rem system-ui;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.days button.on{background:var(--yellow-soft);border-color:var(--brown)}
+.days button i{font-style:normal;font-size:.7rem;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center}
+.days button.on i{background:var(--brown);border-color:var(--brown);color:var(--brown-ink)}
+.bignum{font:700 4rem/1 "Fraunces",Georgia,serif;text-align:center;margin:30px 0 6px}
+input[type=range]{width:100%;accent-color:var(--brown);height:30px}
+input[type=text],input[type=search],select{font:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:11px 13px;width:100%}
+.seg{display:flex;background:var(--chip);border-radius:12px;padding:3px}
+.seg button{flex:1;border:0;background:none;color:var(--ink);font:inherit;font-size:.9rem;padding:9px 4px;border-radius:10px;cursor:pointer}
+.seg button.on{background:var(--card);font-weight:600;box-shadow:var(--shadow)}
+.switch{display:flex;align-items:center;gap:12px;cursor:pointer}
+.switch input{width:22px;height:22px;accent-color:var(--brown)}
+.kitchen{background:linear-gradient(180deg,#e9894a,#d9733a);border-radius:22px;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.kitchen button{border:0;border-radius:14px;background:rgba(255,255,255,.22);color:#fff;font:600 .9rem system-ui;padding:16px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+.kitchen button .e{font-size:2rem;filter:grayscale(.6) opacity(.7)}
+.kitchen button.on{background:#fff7e6;color:#5a2e14}
+.kitchen button.on .e{filter:none}
+.kitchen button.on::after{content:"✓";position:absolute;top:6px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--yellow);color:#3a2a06;font-size:.75rem;display:grid;place-items:center}
+.checks{list-style:none;padding:0;margin:24px 0 0}
+.checks li{display:flex;gap:10px;align-items:center;padding:8px 0;color:var(--muted);font-size:.95rem}
+.checks li i{font-style:normal;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:.7rem;flex-shrink:0}
+.checks li.done{color:var(--ink)}.checks li.done i{background:var(--green);border-color:var(--green);color:#fff}
+.checks li.run i{border-color:var(--yellow);border-top-color:transparent;animation:rot .8s linear infinite}
+.checks li.fail i{background:var(--red);border-color:var(--red);color:#fff}
+@keyframes rot{to{transform:rotate(360deg)}}
+.basket{font-size:5rem;text-align:center;margin:40px 0 0;animation:bob 1.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.brand{display:flex;justify-content:center;align-items:center;gap:6px;font:700 1.1rem "Fraunces",Georgia,serif;color:var(--brown)}
+.hello{text-align:center;font-size:2rem;margin:8px 0 2px}
+.planfor{text-align:center;margin-bottom:16px}
+.planfor select{width:auto;display:inline-block;padding:4px 8px;border-radius:8px;font-size:.9rem;border-color:transparent;background:var(--chip)}
+.einkauf{border-radius:20px;overflow:hidden;position:relative;color:#fff;padding:18px;min-height:170px;background:
+ radial-gradient(circle at 15% 20%,#6b3a1c 0,transparent 35%),radial-gradient(circle at 70% 80%,#3d4a1f 0,transparent 40%),radial-gradient(circle at 40% 60%,#7a2d16 0,transparent 30%),#26170e;margin-bottom:12px;cursor:pointer}
+.einkauf .deco{position:absolute;font-size:1.6rem;opacity:.85}
+.einkauf .txt{position:relative;z-index:1;max-width:48%;display:flex;flex-direction:column;justify-content:flex-end;height:134px}
+.pill{display:inline-block;background:var(--yellow);color:#3a2a06;border-radius:999px;padding:6px 12px;font-weight:700;font-size:.82rem;margin-top:10px;width:max-content}
+.receipt{position:absolute;right:14px;top:14px;width:46%;background:#fffdf8;color:#2b211b;border-radius:4px;padding:10px 10px 8px;transform:rotate(2deg);box-shadow:0 6px 16px rgba(0,0,0,.35);font:500 .68rem/1.5 ui-monospace,Menlo,monospace}
+.receipt .r{display:flex;justify-content:space-between}
+.receipt .tot{border-top:1px dashed #b9ab9b;margin-top:5px;padding-top:4px;font-size:.78rem;font-weight:700}
+.barcode{height:18px;margin-top:6px;background:repeating-linear-gradient(90deg,#2b211b 0 1px,transparent 1px 3px,#2b211b 3px 5px,transparent 5px 6px,#2b211b 6px 7px,transparent 7px 9px)}
+.ring{display:flex;gap:16px;align-items:center}
+.ring svg{flex-shrink:0}
+.ok{color:var(--green)}.bad{color:var(--red)}
+.day{display:flex;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow);cursor:pointer}
+.day .strip{width:46px;background:var(--yellow);color:#3a2a06;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.day .strip small{font-size:.65rem;letter-spacing:.05em}
+.day .strip b{font:700 1.2rem "Fraunces",Georgia,serif}
+.day.left .strip{background:var(--chip);color:var(--muted)}
+.day .body{display:flex;gap:12px;align-items:center;padding:10px;flex:1;min-width:0}
+.thumb{width:68px;height:68px;border-radius:14px;object-fit:cover;background:var(--chip);flex-shrink:0}
+.ttl{font:600 1rem/1.25 "Fraunces",Georgia,serif;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tag{display:inline-block;font-size:.72rem;padding:2px 9px;border-radius:999px;background:var(--yellow-soft);color:var(--yellow-ink);font-weight:600;margin:4px 4px 0 0}
+.meta{font-size:.8rem;color:var(--muted);margin-top:3px}
+.iconbtn{border:0;background:var(--chip);color:var(--ink);border-radius:10px;width:36px;height:36px;font-size:1rem;cursor:pointer;flex-shrink:0}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:5;padding:0 12px calc(10px + env(safe-area-inset-bottom))}
+.nav>div{max-width:456px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:20px;display:flex;box-shadow:0 4px 20px rgba(0,0,0,.12);padding:6px}
+.nav button{flex:1;border:0;background:none;color:var(--muted);font:inherit;font-size:.72rem;padding:6px 2px;border-radius:14px;cursor:pointer}
+.nav button i{display:block;font-style:normal;font-size:1.25rem}
+.nav button.on{background:var(--yellow-soft);color:var(--ink);font-weight:600}
+.overlay{position:fixed;inset:0;background:var(--bg);z-index:20;overflow:auto}
+.overlay .in{max-width:480px;margin:0 auto;padding-bottom:110px}
+.hero{position:relative;height:260px;background:var(--chip)}
+.hero img{width:100%;height:100%;object-fit:cover}
+.hero .iconbtn{position:absolute;top:14px;background:rgba(255,255,255,.9);color:#2b211b}
+.pad{padding:16px}
+.ing{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.ing:last-child{border-bottom:0}
+.ing .a{color:var(--muted);font-size:.85rem;white-space:nowrap}
+.step{display:flex;gap:12px;margin-bottom:16px}
+.step .ic{width:40px;height:40px;border-radius:50%;background:var(--yellow-soft);display:grid;place-items:center;font-size:1.1rem;flex-shrink:0}
+.step small{display:block;font-size:.7rem;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:2px}
+.cmp{display:grid;grid-template-columns:1fr auto;gap:5px 12px;font-size:.9rem}
+.best{color:var(--green);font-weight:700}
+.livedot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-left:5px;vertical-align:middle}
+.aisle{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:16px 0 4px}
+.li{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.li input{width:22px;height:22px;accent-color:var(--brown);flex-shrink:0}
+.li.done .grow{opacity:.45;text-decoration:line-through}
+.cook{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column}
+.cook .in{max-width:480px;width:100%;margin:0 auto;flex:1;display:flex;flex-direction:column;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+.cook .txt{font:500 1.35rem/1.45 "Fraunces",Georgia,serif;flex:1;overflow:auto;margin:20px 0}
+.dots{display:flex;gap:5px}.dots span{flex:1;height:4px;border-radius:4px;background:var(--line)}.dots span.on{background:var(--brown)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none}
+.chips button{flex-shrink:0;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 13px;font:inherit;font-size:.85rem;cursor:pointer}
+.chips button.on{background:var(--yellow-soft);border-color:var(--brown);font-weight:600}
+.note{font-size:.75rem;color:var(--muted);text-align:center;margin:18px 0 0}
+.warn{background:var(--red-soft);color:var(--red);border-radius:12px;padding:10px 12px;font-size:.88rem;margin-bottom:12px}
+.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:50;font-size:.9rem}
+a{color:var(--brown)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+/* =========================================================
+   Zutaten-Datenbank: ordnet TheMealDB-Zutaten (englisch) österreichischen
+   Produkten zu. Felder: englische Namen | deutscher Name | Basiseinheit |
+   Schätzpreis (€/kg, €/l oder €/Stk) | Packungsgröße | Stückgewicht |
+   Dichte | Regal | Merkmale | Suchbegriffe für Live-Preise;Ausschlüsse
+   ========================================================= */
+const DBRAW=`chicken breast,chicken breasts,chicken fillet,chicken fillets,boneless chicken|Hühnerbrustfilet|g|11|500|180||fl|m|hühnerbrust,hendlbrust,hühnerfilet,hähnchenbrust
+chicken thigh,chicken thighs,chicken leg,chicken legs,chicken drumstick,chicken drumsticks,chicken wings|Hühnerkeulen|g|6|1000|200||fl|m|hühnerkeule,hendlkeule,hühnerschenkel,hendlhaxe,hühnerunterkeule
+chicken,whole chicken|Ganzes Huhn|g|5.5|1300|1300||fl|m|ganzes huhn,brathuhn,brathendl,ganzes hendl
+chicken stock,chicken broth|Hühnersuppe (Würfel)|ml|0.6|3000|||gw|m|hühnersuppe,hühnerbouillon
+beef,stewing beef,beef brisket,beef chuck,braising steak,diced beef,beef shin|Rindfleisch (Gulasch)|g|14|500|||fl|m,bf|rindsgulasch,rindfleisch,gulaschfleisch,rindsschulter
+minced beef,beef mince,ground beef,mince,minced meat|Faschiertes (Rind)|g|10|500|||fl|m,bf|rindsfaschiertes,faschiertes
+beef fillet,sirloin steak,steak,rump steak,beef steak,ribeye steak|Rindersteak|g|30|300|200||fl|m,bf|rindersteak,rumpsteak,beiried
+beef stock,beef broth|Rindsuppe (Würfel)|ml|0.6|3000|||gw|m,bf|rindsuppe,rindsbouillon
+lamb,lamb leg,lamb shoulder,lamb chops,diced lamb,lamb loin chops|Lammfleisch|g|20|500|||fl|m|lamm;faschiert
+lamb mince,minced lamb|Lammfaschiertes|g|16|400|||fl|m|lammfaschiert
+pork,pork shoulder,pork belly,pork loin,pork tenderloin|Schweinefleisch|g|8|500|||fl|m,pk|schweinsschulter,schweinefleisch,schopf,schweinsbauch,schweinslungenbraten
+pork chops,pork chop|Schweinskotelett|g|9|500|200||fl|m,pk|kotelett,karree
+minced pork,pork mince|Faschiertes (Schwein)|g|8|500|||fl|m,pk|schweinsfaschiertes,faschiertes
+bacon,streaky bacon,pancetta,lardons,smoked bacon,bacon rashers|Speck|g|14|150|25||fl|m,pk|speck,bauchspeck,frühstücksspeck;käse,chips
+ham,cooked ham,parma ham,prosciutto|Schinken|g|15|150|25||ku|m,pk|schinken,beinschinken;käse
+sausage,sausages,pork sausage,pork sausages|Bratwürstel|g|9|400|80||fl|m,pk|bratwurst,bratwürstel
+chorizo|Chorizo|g|18|200|||ku|m,pk,hot|chorizo
+salami|Salami|g|16|100|||ku|m,pk|salami
+duck,duck legs,duck breast|Ente|g|14|600|300||fl|m|ente,entenbrust,entenkeule
+turkey,turkey mince,turkey breast|Pute|g|11|500|||fl|m|pute,truthahn
+salmon,salmon fillet,salmon fillets,smoked salmon|Lachsfilet|g|22|250|125||tk|f|lachs
+cod,white fish,haddock,white fish fillets,cod fillet,pollock,hake,tilapia|Seelachs/Kabeljau|g|14|400|125||tk|f|kabeljau,seelachs,dorsch,alaska
+tuna,tinned tuna|Thunfisch (Dose)|g|11|150|||vo|f|thunfisch
+anchovy,anchovy fillet,anchovies|Sardellen|g|35|50|||vo|f|sardellen
+prawns,prawn,shrimp,king prawns,tiger prawns,raw king prawns|Garnelen|g|25|250|||tk|s|garnelen,shrimps,crevetten
+mussels|Miesmuscheln|g|8|1000|||tk|s|miesmuschel
+squid|Tintenfisch|g|15|400|||tk|s|tintenfisch,calamari
+egg,eggs,free-range egg,free-range eggs,large egg|Eier|stk|0.3|10|55||ku|e|eier;nudel,likör,salat,aufstrich
+egg white,egg whites|Eiklar|stk|0.3|10|30||ku|e|eier;nudel,likör,salat
+egg yolk,egg yolks|Eidotter|stk|0.3|10|20||ku|e|eier;nudel,likör,salat
+milk,whole milk,semi-skimmed milk,full fat milk|Milch|ml|1.25|1000|||ku|d|vollmilch,frische milch,haltbarmilch;schokolade,reis,hafer,kokos,mandel,soja,kondens
+butter,unsalted butter,salted butter|Butter|g|10|250||0.95|ku|d|butter;schmalz,keks,croissant,milch,brezel
+double cream,heavy cream,cream,whipping cream,thickened cream|Schlagobers|ml|5|250||1|ku|d|schlagobers
+single cream|Kochobers|ml|4.4|250|||ku|d|kochobers,cremefine
+sour cream|Sauerrahm|g|4|250||1|ku|d|sauerrahm
+creme fraiche|Crème fraîche|g|7|125||1|ku|d|creme fraiche,crème fraîche
+yogurt,greek yogurt,natural yogurt,plain yogurt,yoghurt|Joghurt|g|3|500||1|ku|d|naturjoghurt,griechisches joghurt,joghurt natur
+cheddar cheese,cheddar,cheese,grated cheese,red leicester cheese,monterey jack cheese|Käse (Cheddar/Gouda)|g|12|200||0.45|ku|d|cheddar,gouda,reibkäse
+parmesan,parmesan cheese,parmigiano-reggiano,pecorino|Parmesan|g|25|100||0.45|ku|d|parmesan,grana padano
+mozzarella,mozzarella balls|Mozzarella|g|7|125|125|1|ku|d|mozzarella
+feta|Feta|g|9|200||1|ku|d|feta,schafkäse
+goats cheese|Ziegenkäse|g|20|150|||ku|d|ziegenkäse
+ricotta|Ricotta|g|8|250||1|ku|d|ricotta
+mascarpone|Mascarpone|g|9|250||1|ku|d|mascarpone
+cream cheese|Frischkäse|g|7|200||1|ku|d|frischkäse
+gruyere,emmental,swiss cheese,gruyère cheese|Emmentaler|g|14|200||0.45|ku|d|emmentaler,bergkäse
+paneer,halloumi|Grillkäse|g|15|200|||ku|d|halloumi,grillkäse,paneer
+ghee|Butterschmalz|g|12|250||0.9|ku|d|butterschmalz,ghee
+potato,potatoes,new potatoes,floury potatoes,baby new potatoes,maris piper potatoes,small potatoes,king edward potatoes|Erdäpfel|g|1.3|2000|170||og||erdäpfel,kartoffel;chips,püree,knödel,salat,teig,wedges,pommes,rösti
+sweet potato,sweet potatoes|Süßkartoffel|g|3|1000|300||og||süßkartoffel;pommes,chips
+onion,onions,brown onion,yellow onion,white onion|Zwiebeln|g|1.3|1000|150||og||zwiebel;frühling,röst,suppe,chips,ringe,schalotte,jung,rote,sauce,brot
+red onion,red onions|Rote Zwiebeln|g|2|500|150||og||rote zwiebel
+spring onion,spring onions,scallion,scallions,green onion,green onions|Jungzwiebel|stk|0.3|8|15||og||jungzwiebel,frühlingszwiebel
+shallot,shallots|Schalotten|g|4|250|30||og||schalotte
+garlic,garlic clove,garlic cloves,minced garlic|Knoblauch|g|8|100|5||og||knoblauch;granulat,pulver,sauce,brot,butter,öl,dip,salami
+garlic paste,ginger garlic paste|Knoblauchpaste|g|15|100|||gw||knoblauchpaste
+ginger,ginger root,fresh ginger|Ingwer|g|6|100|20||og||ingwer;shot,tee,getränk,bier,keks,sirup
+ginger paste|Ingwerpaste|g|15|100|||gw||ingwerpaste
+carrot,carrots|Karotten|g|1.2|1000|80||og||karotten;saft,salat
+celery|Stangensellerie|g|3|500|40||og||stangensellerie,staudensellerie
+leek,leeks|Lauch|g|3|500|200||og||lauch,porree
+tomato,tomatoes,vine tomatoes,beef tomato,large tomato|Tomaten|g|3|500|120||og||tomaten;dose,passiert,mark,sauce,ketchup,getrocknet,gehackt,stück,cherry,cocktail,mozzarella,suppe,saft
+cherry tomato,cherry tomatoes|Cherrytomaten|g|6|250|15||og||cherrytomaten,cocktailtomaten,rispen
+chopped tomatoes,tinned tomatoes,canned tomatoes,tinned tomato,tinned tomatos,diced tomatoes,plum tomatoes,plum tomatoes in juice,peeled tomatoes|Gehackte Tomaten (Dose)|g|1.6|400|400||vo||gehackte tomaten,tomaten stücke,geschälte tomaten
+passata|Passierte Tomaten|g|1.8|500|||vo||passierte,passata
+tomato puree,tomato paste|Tomatenmark|g|5|200||1.1|vo||tomatenmark
+sun-dried tomatoes|Getrocknete Tomaten|g|20|200|||vo||getrocknete tomaten
+red pepper,green pepper,yellow pepper,bell pepper,red peppers,green peppers,red bell pepper,orange pepper|Paprika|g|4|500|160||og||paprika;pulver,gewürz,edelsüß,chips,sauce,mix,aufstrich
+courgette,courgettes,zucchini|Zucchini|g|2.5|500|250||og||zucchini
+aubergine,eggplant|Melanzani|g|3|500|300||og|au|melanzani,aubergine
+mushroom,mushrooms,chestnut mushroom,chestnut mushrooms,button mushrooms,shiitake mushrooms|Champignons|g|6|250|20||og|mu|champignon
+spinach,baby spinach|Spinat|g|8|250|||og||blattspinat,babyspinat,spinat
+frozen peas,peas,garden peas|Erbsen TK|g|3|450|||tk||erbsen;kicher,snack
+sweetcorn,corn|Mais (Dose)|g|3|300|||vo||mais;chips,stärke,mehl,waffel
+broccoli|Brokkoli|g|4|500|400||og||brokkoli,broccoli
+cauliflower|Karfiol|g|3|800|800||og||karfiol,blumenkohl
+cabbage,white cabbage,red cabbage,savoy cabbage|Kraut|g|1.5|1000|1000||og||weißkraut,rotkraut,kohl
+kale|Grünkohl|g|8|200|||og||grünkohl
+lettuce,iceberg lettuce,little gem lettuce,romaine lettuce|Salat|stk|1|1|300||og||eisberg,häuptelsalat,römersalat
+rocket,arugula|Rucola|g|15|100|||og||rucola
+cucumber|Gurke|stk|0.8|1|400||og||gurke;essig,salzgurke,gewürz,cornichon
+avocado,avocados|Avocado|stk|1|2|200||og||avocado;öl,creme
+green beans|Fisolen|g|6|400|||tk||fisolen,grüne bohnen
+asparagus|Spargel|g|10|500|||og||spargel
+pumpkin,squash,butternut squash|Kürbis|g|2|1000|1000||og||kürbis;kerne,öl,suppe
+beetroot|Rote Rüben|g|3|500|150||og||rote rüben,rote bete
+fennel,fennel bulb|Fenchel|g|4|500|300||og||fenchel;tee,samen
+lemon,lemons|Zitronen|stk|0.4|4|100||og||zitrone;saft,limonade,tee,keks,kuchen
+lemon juice|Zitronensaft|ml|4|200|30||vo||zitronensaft
+lemon zest|Zitronenschale|stk|0.4|4|100||og||zitrone;saft,limonade,tee
+lime,limes|Limetten|stk|0.5|4|60||og||limette;saft,sirup
+lime juice|Limettensaft|ml|8|200|30||vo||limettensaft
+apple,apples,bramley apples|Äpfel|g|2|1000|180||og||äpfel,apfel;saft,mus,chips,essig,strudel,tasche
+banana,bananas|Bananen|g|1.6|1000|120||og||banane;chips
+orange,oranges|Orangen|g|2|1000|200||og||orange;saft,limonade
+raisins,sultanas|Rosinen|g|8|200|||vo||rosinen,sultaninen
+rice,long grain rice,white rice,cooked rice|Langkornreis|g|1.8|1000||0.85|vo||langkornreis,parboiled;waffel,milch,nudel,essig,drink
+basmati rice|Basmatireis|g|3|1000||0.85|vo||basmati
+jasmine rice|Jasminreis|g|3|1000||0.85|vo||jasmin;tee
+arborio rice,risotto rice|Risottoreis|g|4|1000||0.85|vo||risotto
+spaghetti|Spaghetti|g|2|500|||vo|gl|spaghetti;sauce,eis
+penne,penne rigate,pasta,fusilli,rigatoni,farfalle,conchiglie|Penne|g|2|500|||vo|gl|penne,fusilli;sauce
+macaroni|Makkaroni|g|2|500|||vo|gl|makkaroni,hörnchen
+linguine,fettuccine,tagliatelle,pappardelle|Bandnudeln|g|3.5|500|||vo|gl|tagliatelle,bandnudeln,linguine
+lasagne sheets,lasagna sheets|Lasagneblätter|g|3.5|500|||vo|gl|lasagne;fertig,tk
+egg noodles,noodles,chinese noodles|Mie-Nudeln|g|5|250|||vo|gl,e|mie nudeln,eiernudeln,asia nudeln
+rice noodles,rice vermicelli|Reisnudeln|g|8|250|||vo||reisnudeln
+udon noodles|Udon-Nudeln|g|10|300|||vo|gl|udon
+gnocchi|Gnocchi|g|3|500|||ku|gl|gnocchi
+couscous|Couscous|g|4|500||0.75|vo|gl|couscous
+bulgur wheat,bulgur|Bulgur|g|4|500||0.8|vo|gl|bulgur
+quinoa|Quinoa|g|10|500||0.8|vo||quinoa
+flour,plain flour,all purpose flour|Mehl glatt|g|0.8|1000||0.55|vo|gl|mehl glatt,weizenmehl glatt;vollkorn,dinkel,griffig,mais
+self-raising flour,self raising flour|Mehl + Backpulver|g|1|1000||0.55|vo|gl|mehl glatt
+cornflour,cornstarch,corn starch|Maisstärke|g|5|400||0.6|vo||maisstärke,maizena
+breadcrumbs,panko,panko bread crumbs|Semmelbrösel|g|2.5|400||0.45|vo|gl|semmelbrösel,paniermehl,panko
+bread,white bread,sourdough bread,baguette|Brot|g|4|500|40||br|gl|toastbrot,mischbrot,baguette
+tortilla,tortillas,flour tortilla,flour tortillas|Tortilla Wraps|stk|0.22|8|50||br|gl|tortilla,wraps;chips
+pita bread,naan bread,flatbread|Fladenbrot|stk|0.6|4|80||br|gl|fladenbrot,naan,pita
+burger bun,burger buns,bun,buns|Burgerbrötchen|stk|0.4|6|60||br|gl|burger brötchen,burgerbrötchen,burger buns
+puff pastry|Blätterteig|g|5|275|||ku|gl|blätterteig
+filo pastry|Strudelteig|g|10|250|||ku|gl|filo,strudelteig
+shortcrust pastry|Mürbteig|g|6|275|||ku|gl|mürbteig
+pizza dough|Pizzateig|g|4|400|||ku|gl|pizzateig
+yeast,dried yeast|Germ|g|10|42|||ku||germ,hefe
+baking powder|Backpulver|g|10|16|||vo|p|backpulver
+bicarbonate of soda,baking soda|Natron|g|8|50|||vo|p|natron
+sugar,caster sugar,granulated sugar,white sugar|Zucker|g|1.1|1000||0.85|vo|p|kristallzucker;würfel,staub,vanille,frei,braun,gelier
+brown sugar,muscovado sugar,dark brown sugar,light brown soft sugar,demerara sugar|Brauner Zucker|g|3|500||0.85|vo||brauner zucker,rohrzucker
+icing sugar|Staubzucker|g|2|500||0.5|vo|p|staubzucker
+honey|Honig|g|12|500||1.4|vo|an|honig;senf,keks,müsli,ham
+maple syrup|Ahornsirup|ml|20|250|||vo||ahornsirup
+chickpeas|Kichererbsen (Dose)|g|2|400|||vo||kichererbsen
+kidney beans,red kidney beans|Kidneybohnen (Dose)|g|2|400|||vo||kidney
+black beans|Schwarze Bohnen|g|3|400|||vo||schwarze bohnen
+cannellini beans,butter beans,white beans,haricot beans,baked beans,borlotti beans|Weiße Bohnen (Dose)|g|2.5|400|||vo||weiße bohnen,cannellini,baked beans
+lentils,red lentils,green lentils,brown lentils,puy lentils|Linsen|g|3.4|500||0.85|vo||linsen;chips,nudel
+coconut milk|Kokosmilch|ml|3.2|400|||vo|co|kokosmilch;drink
+coconut cream|Kokoscreme|ml|6|200|||vo|co|kokoscreme
+desiccated coconut|Kokosraspeln|g|8|200|||vo|co|kokosraspel
+tofu,firm tofu|Tofu|g|10|200|||ku|so,to|tofu
+soy sauce,dark soy sauce,light soy sauce,soya sauce|Sojasauce|ml|10|150||1.1|gw|so,gl|sojasauce,sojasoße
+fish sauce|Fischsauce|ml|15|200|||gw|f|fischsauce
+oyster sauce|Austernsauce|ml|15|200|||gw|s|austernsauce
+sweet chilli sauce|Süß-Chili-Sauce|ml|8|200|||gw|hot|sweet chili,süße chili
+hot sauce,sriracha,tabasco sauce,tabasco|Scharfe Sauce|ml|20|150|||gw|hot|sriracha,tabasco,hot sauce
+worcestershire sauce|Worcestersauce|ml|20|150|||gw|f|worcester
+tomato ketchup,ketchup|Ketchup|g|4|500||1.1|gw||ketchup
+mayonnaise|Mayonnaise|g|6|500||0.95|gw|e|mayonnaise
+mustard,dijon mustard,english mustard,wholegrain mustard,mustard powder|Senf|g|5|200||1.05|gw||senf;körner
+vinegar,white wine vinegar,red wine vinegar,cider vinegar,apple cider vinegar,balsamic vinegar,rice vinegar,white vinegar|Essig|ml|2|1000|||gw|p|essig;gurke
+olive oil,extra virgin olive oil|Olivenöl|ml|10|500|||gw|p|olivenöl;thunfisch,sardin
+vegetable oil,sunflower oil,oil,rapeseed oil,canola oil,groundnut oil,peanut oil|Sonnenblumenöl|ml|2.5|1000|||gw|p|sonnenblumenöl,rapsöl
+sesame seed oil,sesame oil|Sesamöl|ml|30|250|||gw|se|sesamöl
+sesame seed,sesame seeds|Sesam|g|12|100||0.6|vo|se|sesam;öl,brot,riegel
+peanuts,peanut|Erdnüsse|g|6|200||0.55|vo|pn|erdnüsse;butter,flips,mus
+peanut butter|Erdnussbutter|g|8|350||1.1|vo|pn|erdnussbutter,erdnussmus
+almonds,almond,ground almonds,flaked almonds|Mandeln|g|16|200||0.5|vo|n|mandeln;drink,milch
+cashew nuts,cashews,cashew nut|Cashewkerne|g|20|200||0.55|vo|n|cashew
+walnuts,walnut|Walnüsse|g|18|200||0.5|vo|n|walnüsse,walnusskerne
+pine nuts|Pinienkerne|g|40|100||0.6|vo|n|pinienkerne
+pistachios|Pistazien|g|25|200||0.6|vo|n|pistazien
+hazelnuts|Haselnüsse|g|16|200||0.5|vo|n|haselnüsse;creme,aufstrich
+olives,olive,black olives,green olives,kalamata olives|Oliven|g|10|200|4||vo|ol|oliven;öl
+capers|Kapern|g|20|100|||vo||kapern
+pesto,basil pesto|Pesto|g|10|190||1|vo|d,n|pesto
+red wine|Rotwein|ml|5|750|||ge||rotwein
+white wine,dry white wine|Weißwein|ml|5|750|||ge||weißwein
+beer|Bier|ml|2.5|500|||ge|gl|bier;alkoholfrei,radler
+water,cold water,boiling water,hot water,ice,warm water|Wasser|ml|0|1|||gw|p,free|wasser
+salt,sea salt,kosher salt,sea salt flakes,table salt|Salz|g|0.6|500|||gw|p|salz
+black pepper,pepper,ground black pepper,white pepper,peppercorns,black peppercorns|Pfeffer|g|40|50|||gw|p|pfeffer
+paprika,smoked paprika,sweet paprika|Paprikapulver|g|30|50|||gw|p|paprika edelsüß,paprikapulver
+cumin,ground cumin,cumin seeds|Kreuzkümmel|g|40|40|||gw|p|kreuzkümmel,kumin
+ground coriander,coriander seeds|Koriander gemahlen|g|35|40|||gw|p|koriander
+coriander,cilantro,fresh coriander,coriander leaves|Koriander frisch|g|30|30|||og|kz|koriander
+parsley,flat leaf parsley,fresh parsley,parsley leaves|Petersilie|g|25|30|||og||petersilie
+basil,basil leaves,fresh basil|Basilikum|g|40|25|||og||basilikum;pesto
+thyme,fresh thyme,dried thyme,thyme leaves|Thymian|g|30|25|||gw|p|thymian
+rosemary,fresh rosemary|Rosmarin|g|30|25|||gw|p|rosmarin
+oregano,dried oregano|Oregano|g|40|15|||gw|p|oregano
+bay leaf,bay leaves|Lorbeerblätter|g|80|10|||gw|p|lorbeer
+mint,fresh mint,mint leaves|Minze|g|40|25|||og||minze;tee,kaugummi
+dill|Dille|g|40|25|||og||dille;gurke
+chives|Schnittlauch|g|40|25|||og||schnittlauch
+sage|Salbei|g|40|20|||og||salbei
+cinnamon,cinnamon stick,ground cinnamon|Zimt|g|40|40|||gw|p|zimt;schnecke,keks
+nutmeg|Muskatnuss|g|80|20|||gw|p|muskat
+cloves,clove|Gewürznelken|g|80|20|||gw|p|nelken
+cardamom,cardamom pods|Kardamom|g|120|20|||gw|p|kardamom
+star anise|Sternanis|g|100|15|||gw|p|sternanis
+turmeric,ground turmeric|Kurkuma|g|40|40|||gw|p|kurkuma
+garam masala|Garam Masala|g|50|40|||gw|p|garam masala
+curry powder|Currypulver|g|30|50|||gw|p|currypulver,curry gewürz
+chilli powder,chili powder,cayenne pepper,chilli flakes,red pepper flakes,cayenne,red chilli flakes|Chilipulver|g|40|40|||gw|p,hot|chili gemahlen,chilipulver,cayenne
+red chilli,green chilli,chilli,chili,jalapeno,jalapeño,birds eye chilli,red chili,green chili,scotch bonnet|Chili frisch|g|25|50|10||og|hot|chili frisch,pfefferoni;sauce,pulver,flocken,con carne
+fennel seeds|Fenchelsamen|g|40|40|||gw|p|fenchel
+mustard seeds|Senfkörner|g|30|40|||gw|p|senfkörner
+mixed herbs,italian seasoning,herbes de provence,dried herbs|Kräutermischung|g|40|20|||gw|p|kräuter
+vanilla extract,vanilla|Vanille-Extrakt|ml|60|30|||gw||vanille
+stock cube,chicken stock cube,vegetable stock cube,beef stock cube,stock cubes|Suppenwürfel|stk|0.17|6|10||gw|p|suppenwürfel,bouillon würfel
+vegetable stock,vegetable broth|Gemüsesuppe (Würfel)|ml|0.5|3000|||gw||gemüsebouillon,gemüsesuppe würfel
+thai red curry paste,red curry paste,thai green curry paste,green curry paste,curry paste|Currypaste|g|25|100|||gw|s,hot|currypaste
+tamarind paste,tamarind|Tamarindenpaste|g|30|100|||gw||tamarind
+lemongrass|Zitronengras|g|20|50|||og||zitronengras
+miso|Miso|g|20|200|||gw|so|miso
+dark chocolate,chocolate,milk chocolate|Schokolade|g|10|100|||vo|d|schokolade;keks,drink,riegel
+cocoa,cocoa powder|Kakaopulver|g|15|125||0.5|vo||kakao
+jam,raspberry jam,strawberry jam|Marmelade|g|5|450|||vo||marmelade,konfitüre
+condensed milk|Kondensmilch|g|6|400|||vo|d|kondensmilch
+mixed vegetables,frozen vegetables,frozen mixed vegetables|Gemüsemischung TK|g|3|750|||tk||gemüsemischung,buttergemüse
+hummus|Hummus|g|12|200|||ku||hummus
+tahini|Tahin|g|15|250|||vo|se|tahin
+harissa,harissa spice|Harissa|g|25|100|||gw|hot|harissa
+pickles,gherkins|Essiggurken|g|5|670|||vo||essiggurken,gurkerl
+cranberries,dried cranberries|Cranberries|g|15|200|||vo||cranberries
+dates|Datteln|g|10|200|||vo||datteln`;
+
+const AISLE={og:'Obst & Gemüse',fl:'Fleisch & Fisch',ku:'Gekühlt',tk:'Tiefkühl',br:'Brot & Gebäck',vo:'Vorratsschrank',gw:'Gewürze & Saucen',ge:'Getränke',xx:'Sonstiges'};
+const AISLE_ORDER=['og','fl','ku','tk','br','vo','gw','ge','xx'];
+
+function norm(s){
+  return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ')
+    .split(/\s+/).filter(Boolean).map(w=>w.length>3?w.replace(/oes$/,'o').replace(/ies$/,'y').replace(/([^s])s$/,'$1'):w).join(' ');
+}
+const DB={},KEYS=[];
+DBRAW.trim().split('\n').forEach((line,i)=>{
+  const [names,de,u,p,pack,w,d,aisle,flags,q]=line.split('|');
+  const qq=(q||'').split(';');
+  const o={id:'i'+i,de,u,p:+p,pack:+pack||1,w:+w||100,d:+d||1,aisle,f:(flags||'').split(',').filter(Boolean),
+    q:(qq[0]||de.toLowerCase()).split(',').map(s=>s.trim()).filter(Boolean),x:(qq[1]||'').split(',').map(s=>s.trim()).filter(Boolean)};
+  DB[o.id]=o;
+  names.split(',').forEach(k=>KEYS.push([norm(k),o.id]));
+});
+KEYS.sort((a,b)=>b[0].length-a[0].length);
+function matchIng(name){
+  const n=norm(name);if(!n)return null;
+  for(const [k,id] of KEYS)if(k===n)return id;
+  const padded=' '+n+' ';
+  for(const [k,id] of KEYS)if(padded.includes(' '+k+' '))return id;
+  return null;
+}
+
+/* ---------- Mengenangaben parsen ---------- */
+const FR={'½':.5,'¼':.25,'¾':.75,'⅓':1/3,'⅔':2/3,'⅛':.125};
+const UNITS=[[/^(kg|kgs|kilos?|kilograms?)\b/,'g',1000],[/^(g|gr|grams?|gramm)\b/,'g',1],[/^(ml|millilit(?:re|er)s?)\b/,'ml',1],[/^cl\b/,'ml',10],[/^dl\b/,'ml',100],
+  [/^(l|lit(?:re|er)s?)\b/,'ml',1000],[/^fl\.? ?oz\b/,'ml',30],[/^cups?\b/,'ml',240],[/^(tbsp|tbs|tblsp|tbls|tablespoons?|tbsps)\b/,'ml',15],[/^(tsp|tsps|teaspoons?)\b/,'ml',5],
+  [/^(oz|ounces?)\b/,'g',28],[/^(lbs?|pounds?)\b/,'g',454],[/^pints?\b/,'ml',570],[/^(cans?|tins?)\b/,'g',400],[/^cloves?\b/,'g',5],[/^slices?\b/,'g',30],
+  [/^sprigs?\b/,'g',2],[/^(bunch|bunches)\b/,'g',30],[/^handfuls?\b/,'g',30],[/^(pinch|pinches)\b/,'g',0.5],[/^(dash|splash|drizzle)\b/,'ml',5],
+  [/^knobs?\b/,'g',15],[/^(packets?|packs?|bags?|jars?|pots?|tubs?|boxe?s?)\b/,'pack',1]];
+function parseMeasure(m){
+  let s=String(m||'').toLowerCase().trim();
+  for(const k in FR)s=s.replace(new RegExp('(\\d)?\\s*'+k),(a,d)=>(d?(+d+FR[k]):FR[k])+' ');
+  let q=null,mm;
+  if((mm=s.match(/^(\d+)\s+(\d+)\/(\d+)/))){q=+mm[1]+mm[2]/mm[3];s=s.slice(mm[0].length);}
+  else if((mm=s.match(/^(\d+)\/(\d+)/))){q=mm[1]/mm[2];s=s.slice(mm[0].length);}
+  else if((mm=s.match(/^(\d+(?:[.,]\d+)?)(?:\s*(?:-|to)\s*\d+(?:[.,]\d+)?)?/))){q=parseFloat(mm[1].replace(',','.'));s=s.slice(mm[0].length);}
+  s=s.trim();
+  for(const [re,k,f] of UNITS)if(re.test(s))return {q:(q==null?1:q)*f,k,tiny:k==='g'&&f<1||/^(dash|splash|drizzle)/.test(s)};
+  if(q==null){
+    if(/taste|garnish|season|pinch|sprinkl|to serve|for frying|greas|dusting|optional|as required|as needed/.test(s)||!s)return {q:1,k:'g',tiny:true};
+    return {q:1,k:'stk'};
+  }
+  return {q,k:'stk'};
+}
+function toBase(I,pm){
+  const {q,k}=pm;
+  if(k==='pack')return I.pack*q;
+  if(k===I.u)return q;
+  if(I.u==='g')return k==='ml'?q*I.d:q*I.w;
+  if(I.u==='ml')return k==='g'?q/I.d:q*I.w;
+  return q/I.w;
+}
+
+/* ---------- Merkmale aus Zutatennamen ---------- */
+const KW={m:/\b(chicken|beef|pork|lamb|bacon|ham|sausages?|turkey|duck|veal|goat|mince|chorizo|salami|prosciutto|pancetta|venison|rabbit|meat|steak|brisket|oxtail|gammon|lardons?|pepperoni|liver|mutton)\b/,
+  f:/\b(fish|salmon|tuna|cod|anchov\w*|sardines?|mackerel|haddock|trout|tilapia|sea bass|monkfish|herring|pollock|kippers?|hake)\b/,
+  s:/\b(prawns?|shrimps?|crabs?|lobsters?|mussels?|clams?|oysters?|squid|scallops?|calamari)\b/,
+  d:/\b(milk|cheese|cream|butter|yogh?urt|ghee|creme|crème|paneer|mascarpone|ricotta|mozzarella|parmesan|cheddar|feta|brie|gruy\w*|halloumi|emmental|pecorino)\b/,
+  e:/\beggs?\b|egg (white|yolk)/,gl:/\b(flour|bread|pasta|spaghetti|noodles?|breadcrumbs|tortillas?|couscous|bulgur|pastry|penne|macaroni|lasagne|lasagna|fettuccine|linguine|tagliatelle|rigatoni|fusilli|wheat|barley|buns?|naan|pitta|pita|beer|soy sauce|semolina|gnocchi|udon|wonton|biscuits?|crackers?|panko)\b/,
+  n:/\b(almonds?|walnuts?|cashews?|pecans?|hazelnuts?|pine nuts|pistachios?|macadamia|brazil nuts?)\b/,pn:/peanut/,so:/\b(soy|soya|tofu|edamame|miso|tempeh)\b/,se:/sesame|tahini/,
+  pk:/\b(pork|bacon|ham|sausages?|chorizo|pancetta|prosciutto|salami|lardons?|gammon|pepperoni)\b/,bf:/\b(beef|steak|brisket|veal|oxtail)\b/,la:/\b(lamb|mutton)\b/,
+  hot:/\b(chill?i|chile|chilies|jalape\w*|cayenne|sriracha|tabasco|hot sauce|harissa|scotch bonnet|gochujang)\b/,mu:/mushroom/,ol:/\bolives?\b/,to:/tofu/,au:/aubergine|eggplant/,co:/coconut/,kz:/coriander|cilantro/,an:/honey|gelatin/};
+function nameFlags(n){
+  const s=n.toLowerCase(),f=new Set();
+  for(const k in KW)if(KW[k].test(s))f.add(k);
+  if(/coconut (milk|cream)|peanut butter|butter beans?|cream of tartar|cocoa butter/.test(s))f.delete('d');
+  if(/eggplant/.test(s))f.delete('e');
+  if(/chestnut mushroom/.test(s))f.delete('n');
+  if(/olive oil/.test(s))f.delete('ol');
+  if(/sweet chilli/.test(s)){}
+  if(/stock|broth/.test(s)&&/chicken|beef/.test(s))f.add('m');
+  return f;
+}
+
+/* ---------- Läden ---------- */
+const STORES=[
+  {id:'hofer',n:'Hofer',m:1.00,ds:'hofer'},{id:'lidl',n:'Lidl',m:1.01,ds:'lidl'},{id:'penny',n:'Penny',m:1.03,ds:'penny'},
+  {id:'billa',n:'Billa',m:1.15,ds:'billa'},{id:'billaplus',n:'Billa Plus',m:1.13,ds:'billa'},{id:'spar',n:'Spar',m:1.12,ds:'spar'},
+  {id:'eurospar',n:'Eurospar',m:1.11,ds:'spar'},{id:'interspar',n:'Interspar',m:1.09,ds:'spar'},
+  {id:'mpreis',n:'MPreis',m:1.17,ds:'mpreis',reg:['5','6']},{id:'unimarkt',n:'Unimarkt',m:1.14,ds:'unimarkt',reg:['2','3','4','5','8']}
+];
+const storeById=id=>STORES.find(s=>s.id===id);
+function region(plz){
+  if(!/^\d{4}$/.test(plz)||+plz<1010)return null;
+  const a=plz[0],ab=+plz.slice(0,2);
+  return a==='1'?'Wien':a==='2'?(ab>=24?'Niederösterreich / Burgenland':'Niederösterreich'):a==='3'?'Niederösterreich':a==='4'?'Oberösterreich':
+    a==='5'?'Salzburg':a==='6'?(ab>=67?'Vorarlberg':'Tirol'):a==='7'?'Burgenland':a==='8'?'Steiermark':ab===99?'Osttirol':'Kärnten';
+}
+const storeOK=st=>!st.reg||st.reg.includes(S.plz[0]);
+
+/* ---------- Auswahloptionen ---------- */
+const APPETITE=[['schnell','Schnelle Gerichte','⚡','Schnelles Gericht'],['kalorienarm','Kalorienarm','🥗','Kalorienarm'],['familie','Familienlieblinge','👨‍👩‍👧','Familienliebling'],
+  ['wohlfuehl','Gesundes Wohlfühlessen','🥕','Wohlfühlessen'],['lieferdienst','Lieferdienst, selbst gemacht','🍔','Lieferdienst-Klassiker'],['eiweiss','Eiweißreich','💪','Eiweißreich'],
+  ['mediterran','Mediterran','🫒','Mediterran'],['asiatisch','Asiatisch inspiriert','🥢','Asiatisch'],['deftig','Deftige Hausmannskost','🥘','Deftig']];
+const DIETS=[['keine','Keine','🍽️'],['veg','Vegetarisch','🥦'],['vegan','Vegan','🌱'],['pesc','Pescetarisch','🐟']];
+const DISLIKES=[['pk','Schwein','🐖'],['bf','Rind','🐄'],['la','Lamm','🐑'],['mu','Champignons','🍄'],['s','Meeresfrüchte','🦐'],['ol','Oliven','🫒'],['hot','Scharfes Essen','🌶️'],['to','Tofu','⬜'],['au','Melanzani','🍆'],['co','Kokos','🥥'],['kz','Koriander','🌿']];
+const ALLERGIES=[['pn','Erdnüsse','🥜'],['n','Nüsse','🌰'],['d','Milchprodukte','🥛'],['e','Eier','🥚'],['gl','Weizen / Gluten','🌾'],['so','Soja','🫘'],['f','Fisch','🐟'],['s','Schalentiere','🦞'],['se','Sesam','⚪']];
+const TOOLS=[['herd','Herd','🍳'],['backofen','Backofen','🔲'],['airfryer','Heißluftfritteuse','🌀'],['mixer','Mixer / Pürierstab','🥤']];
+const DAYN=['Mo','Di','Mi','Do','Fr','Sa','So'];
+const DAYL=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+const PLAN_CATS=new Set(['Beef','Chicken','Lamb','Pork','Seafood','Pasta','Vegetarian','Vegan','Goat','Miscellaneous']);
+const UNK=1.0; // Schätzung für unbekannte Zutaten (€ pro Woche)
+
+/* ---------- Zustand ---------- */
+const DEF={screen:'ob',ob:0,plz:'',shops:[],adults:2,kids:0,days:[0,1,2,3,4],budget:60,appetite:[],diet:'keine',dislikes:[],allergies:[],tools:['herd','backofen'],reste:false,pantry:true,
+  tab:'plan',plan:[],planStore:null,checked:{},favs:[],autoTr:true,exCat:'',exQ:'',exAll:false,exN:40};
+let S=Object.assign({},DEF);
+const ls={get(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}};
+const saved=ls.get('kb3');if(saved)S=Object.assign({},DEF,saved);
+if(S.screen==='loading')S.screen=S.plan.length?'main':'ob';
+let UI={open:null,from:null,list:false,cook:null,trBusy:false,loadSteps:[],priceMsg:''};
+function save(){ls.set('kb3',S);}
+
+/* ---------- Rezepte (TheMealDB) ---------- */
+let MEALS=[],RM={};
+const MEALDB='https://www.themealdb.com/api/json/v1/1/';
+function slim(m){
+  const ings=[];
+  for(let i=1;i<=20;i++){const n=(m['strIngredient'+i]||'').trim();if(n)ings.push([n,(m['strMeasure'+i]||'').trim()]);}
+  return {id:m.idMeal,n:m.strMeal,cat:m.strCategory||'',area:m.strArea||'',img:m.strMealThumb||'',tags:m.strTags||'',ings,ins:m.strInstructions||''};
+}
+async function fetchMeals(force){
+  const c=ls.get('kb_meals');
+  if(!force&&c&&c.meals&&c.meals.length&&Date.now()-c.t<7*864e5)return c.meals;
+  const letters='abcdefghijklmnopqrstuvwxyz'.split(''),out=[];
+  let i=0,fails=0;
+  async function worker(){while(i<letters.length){const l=letters[i++];
+    try{const r=await fetch(MEALDB+'search.php?f='+l);const j=await r.json();if(j.meals)j.meals.forEach(m=>out.push(slim(m)));}catch(e){fails++;}}}
+  await Promise.all([worker(),worker(),worker(),worker(),worker()]);
+  if(!out.length){if(c&&c.meals)return c.meals;throw new Error('TheMealDB nicht erreichbar');}
+  ls.set('kb_meals',{t:Date.now(),meals:out});
+  return out;
+}
+function estTime(t,nIng){
+  let sum=0;const re=/(\d+)(?:\s*(?:-|to|–)\s*(\d+))?\s*(minutes?|mins?|hours?|hrs?)\b/gi;let m;
+  while((m=re.exec(t))){const v=+(m[2]||m[1]);sum+=/^h/i.test(m[3])?v*60:v;}
+  let tot=sum?Math.min(240,sum+10):20+nIng*2;
+  return Math.max(10,Math.round(tot/5)*5);
+}
+function splitSteps(t){
+  let parts=t.replace(/\r/g,'').split(/\n+/).map(s=>s.replace(/^\s*(step\s*\d+[:.)]?|\d+[.)]|▢)\s*/i,'').trim()).filter(s=>s.length>3&&!/^step\s*\d*$/i.test(s));
+  if(parts.length<=2){
+    const sent=(parts.join(' ')||t).match(/[^.!?]+[.!?]+["')]?(\s|$)|[^.!?]+$/g)||[t];parts=[];
+    for(let i=0;i<sent.length;i+=2)parts.push(sent.slice(i,i+2).join(' ').trim());
+  }
+  return parts.filter(Boolean);
+}
+function deriveMeal(m){
+  const r={...m,flags:new Set(),tools:new Set(),ingr:[]};
+  for(const [n,me] of m.ings){
+    const id=matchIng(n),pm=parseMeasure(me);let amt=0;
+    if(id){const I=DB[id];amt=toBase(I,pm);if(pm.tiny)amt=Math.min(amt,I.u==='stk'?0.25:3);amt=Math.min(amt,I.pack*6);I.f.forEach(f=>r.flags.add(f));}
+    nameFlags(n).forEach(f=>r.flags.add(f));
+    r.ingr.push({n,me,id,amt,tiny:pm.tiny});
+  }
+  if(m.cat==='Vegetarian'||m.cat==='Vegan'){['m','f','s','pk','bf','la'].forEach(f=>r.flags.delete(f));}
+  if(m.cat==='Vegan'){['d','e','an'].forEach(f=>r.flags.delete(f));}
+  const t=m.ins.toLowerCase();
+  if(/\boven\b|\bbake|\broast|preheat|gas mark|\bgrill\b|under the grill|broil/.test(t))r.tools.add('backofen');
+  if(/\bfry|simmer|\bboil|saucepan|\bpan\b|skillet|\bwok\b|\bpot\b|sauté|saute|stir[- ]fry|hob|stove|heat (the |some )?oil|casserole dish over/.test(t))r.tools.add('herd');
+  if(/blend|blender|food processor|whizz|blitz|pur[eé]e|liquidi[sz]e|hand mixer|stick mixer/.test(t))r.tools.add('mixer');
+  r.time=estTime(m.ins,m.ings.length);
+  const veg=r.ingr.filter(g=>g.id&&DB[g.id].aisle==='og'&&!DB[g.id].f.includes('p')).length;
+  const n=m.n.toLowerCase(),rich=r.ingr.filter(g=>/cream|butter|cheese|sugar|pastry|mayonnaise|bacon/i.test(g.n)).length;
+  r.app={
+    schnell:r.time<=30,
+    kalorienarm:rich<=1&&veg>=2&&!/deep[- ]fr/.test(t),
+    familie:/burger|pizza|lasagn|meatball|pie\b|nugget|mac|spaghetti|bolognese|schnitzel|fajita|taco|wrap|chicken|sausage|potato|pasta/.test(n)||m.cat==='Pasta',
+    wohlfuehl:veg>=3&&!/cream/.test(m.ings.map(x=>x[0]).join(' ').toLowerCase()),
+    lieferdienst:/burger|pizza|curry|kebab|tikka|katsu|fried chicken|noodle|pad thai|chow mein|taco|burrito|wrap|gyro|shawarma|ramen|nachos|wings|fajita|satay|korma|biryani|sweet and sour|kung pao|teriyaki/.test(n),
+    eiweiss:r.flags.has('m')||r.flags.has('f')||r.flags.has('s')||r.ingr.some(g=>/tofu|lentil|chickpea|beans|egg|paneer|halloumi/i.test(g.n)),
+    mediterran:/Italian|Greek|Spanish|Croatian|Moroccan|Turkish|Tunisian|Portuguese|Egyptian/.test(m.area),
+    asiatisch:/Chinese|Japanese|Thai|Vietnamese|Indian|Malaysian|Filipino|Korean/.test(m.area),
+    deftig:/British|Irish|Polish|Russian|Ukrainian|Dutch|Croatian/.test(m.area)||/stew|goulash|schnitzel|dumpling|casserole|pie\b|hotpot|roast|sausage/.test(n)
+  };
+  r.steps=splitSteps(m.ins);
+  return r;
+}
+function setMeals(list){MEALS=list.map(deriveMeal);RM={};MEALS.forEach(r=>RM[r.id]=r);}
+
+/* ---------- Übersetzung (MyMemory) ---------- */
+let TR=ls.get('kb_tr')||{};
+function saveTR(){if(!ls.set('kb_tr',TR)){TR={};ls.set('kb_tr',TR);}}
+async function translate(text){
+  if(TR[text])return TR[text];
+  const chunks=[];let cur='';
+  for(const s of (text.match(/[^.!?\n]+[.!?]*\s*/g)||[text])){if((cur+s).length>440){if(cur)chunks.push(cur);cur=s;}else cur+=s;}
+  if(cur)chunks.push(cur);
+  const out=[];
+  for(const c of chunks){
+    const r=await fetch('https://api.mymemory.translated.net/get?langpair=en%7Cde&q='+encodeURIComponent(c.trim()));
+    const j=await r.json();
+    if(+j.responseStatus!==200)throw new Error(j.responseDetails||'Limit erreicht');
+    out.push(j.responseData.translatedText);
+  }
+  TR[text]=out.join(' ');saveTR();return TR[text];
+}
+const title=r=>TR[r.n]||r.n;
+async function translateTitles(rs){
+  if(!S.autoTr)return;
+  let changed=false;
+  for(const r of rs){if(r&&!TR[r.n]){try{await translate(r.n);changed=true;}catch(e){break;}}}
+  if(changed)render();
+}
+
+/* ---------- Preise ---------- */
+let LIVE=ls.get('kb_live');let SPC={};
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return Math.abs(h);}
+function sp(id,store){
+  const k=id+'|'+store;if(SPC[k])return SPC[k];
+  const I=DB[id],st=storeById(store);
+  const L=LIVE&&LIVE.p&&LIVE.p[st.ds]&&LIVE.p[st.ds][id];
+  let r;
+  if(L)r={u:L.p/L.q,q:L.q,p:L.p,live:true,name:L.n};
+  else{
+    const v=((hash(k)%15)-7)/100,unit=(I.u==='stk'?I.p:I.p/1000)*st.m*(1+v);
+    const p=Math.max(0.19,Math.round(unit*I.pack*10)/10-0.01);
+    r={u:p/I.pack,q:I.pack,p,live:false};
+  }
+  return SPC[k]=r;
+}
+function processLive(items){
+  if(!Array.isArray(items))throw new Error('Unerwartetes Format');
+  const want=new Set(STORES.map(s=>s.ds)),ings=Object.values(DB).filter(I=>!I.f.includes('free')),by={};
+  let n=0;
+  for(const it of items){
+    const st=String(it.store||'').toLowerCase();if(!want.has(st))continue;
+    let unit=String(it.unit||'').toLowerCase(),q=+it.quantity||0;const price=+it.price;
+    if(!price||!q)continue;
+    if(unit==='kg'){unit='g';q*=1000;}else if(unit==='l'){unit='ml';q*=1000;}else if(/^st/.test(unit))unit='stk';
+    const name=String(it.name||'').toLowerCase();
+    for(const I of ings){
+      let qq=q;
+      if(I.u!==unit){if(I.u==='g'&&unit==='ml')qq=q*I.d;else if(I.u==='ml'&&unit==='g')qq=q/I.d;else continue;}
+      if(qq<I.pack*0.15||qq>I.pack*6)continue;
+      if(!I.q.some(t=>name.includes(t)))continue;
+      if(I.x.some(t=>name.includes(t)))continue;
+      ((by[st]=by[st]||{})[I.id]=by[st][I.id]||[]).push({u:price/qq,q:qq,p:price,n:it.name});n++;
+    }
+  }
+  const p={};
+  for(const st in by){p[st]={};for(const id in by[st]){const l=by[st][id].sort((a,b)=>a.u-b.u);const c=l[Math.floor(l.length*0.2)];p[st][id]={q:Math.round(c.q),p:c.p,n:c.n};}}
+  if(!Object.keys(p).length)throw new Error('Keine passenden Produkte gefunden');
+  LIVE={t:Date.now(),p};SPC={};
+  ls.set('kb_live',LIVE);
+  return n;
+}
+async function loadLive(){
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),45000);
+  try{
+    const r=await fetch('https://heisse-preise.io/data/latest-canonical.json',{signal:ctl.signal});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const items=await r.json();processLive(items);
+    UI.priceMsg='';return true;
+  }catch(e){UI.priceMsg=e.name==='AbortError'?'Zeitüberschreitung':(e.message||'blockiert');return false;}
+  finally{clearTimeout(to);}
+}
+const liveFresh=()=>LIVE&&Date.now()-LIVE.t<3*864e5;
+const liveStores=()=>LIVE?S.shops.filter(s=>LIVE.p[storeById(s).ds]):[];
+
+/* ---------- Kosten ---------- */
+const portions=()=>(S.adults+0.6*S.kids)/4;
+const persons=()=>S.adults+S.kids;
+function recipeCost(r,store,F){
+  F=F||portions();let c=0;
+  for(const g of r.ingr){
+    if(!g.id){c+=0.6*F;continue;}
+    const I=DB[g.id];if(I.f.includes('free')||(S.pantry&&I.f.includes('p')))continue;
+    c+=g.amt*F*sp(g.id,store).u;
+  }
+  return c;
+}
+function buildList(entries,store){
+  const agg={},unk={};
+  for(const {r,mult} of entries){const F=portions()*mult;
+    for(const g of r.ingr){if(g.id)agg[g.id]=(agg[g.id]||0)+g.amt*F;else unk[g.n]=1;}}
+  const items=[];let total=0;
+  for(const id in agg){
+    const I=DB[id];if(I.f.includes('free'))continue;
+    const pantry=S.pantry&&I.f.includes('p'),pr=sp(id,store),packs=Math.max(1,Math.ceil(agg[id]/pr.q-1e-9)),cost=pantry?0:packs*pr.p;
+    total+=cost;items.push({key:id,name:I.de,aisle:I.aisle,amt:agg[id],packs,q:pr.q,cost,pantry,live:pr.live,I});
+  }
+  for(const n in unk){total+=UNK;items.push({key:'u:'+n,name:n,aisle:'xx',packs:1,cost:UNK,est:true});}
+  return {items,total};
+}
+const planEntries=()=>S.plan.filter(s=>s.cook&&RM[s.rid]).map(s=>({r:RM[s.rid],mult:s.mult}));
+function cheapest(fn){let b=null;for(const s of S.shops){const c=fn(s);if(!b||c<b.c)b={s,c};}return b;}
+function planStore(){
+  if(S.planStore&&S.shops.includes(S.planStore))return S.planStore;
+  const e=planEntries();return e.length?cheapest(s=>buildList(e,s).total).s:S.shops[0];
+}
+
+/* ---------- Filter ---------- */
+function eligible(r){
+  if(S.diet==='veg'&&(r.flags.has('m')||r.flags.has('f')||r.flags.has('s')))return false;
+  if(S.diet==='vegan'&&['m','f','s','d','e','an'].some(f=>r.flags.has(f)))return false;
+  if(S.diet==='pesc'&&r.flags.has('m'))return false;
+  if(S.dislikes.some(f=>r.flags.has(f)))return false;
+  if(S.allergies.some(f=>r.flags.has(f)))return false;
+  if(r.tools.has('herd')&&!S.tools.includes('herd'))return false;
+  if(r.tools.has('backofen')&&!S.tools.includes('backofen')&&!S.tools.includes('airfryer'))return false;
+  if(r.tools.has('mixer')&&!S.tools.includes('mixer'))return false;
+  return true;
+}
+const forPlan=r=>PLAN_CATS.has(r.cat)&&eligible(r);
+function score(r){return 1+3*S.appetite.filter(a=>r.app[a]).length;}
+function tagOf(r){
+  const a=S.appetite.find(x=>r.app[x])||APPETITE.map(x=>x[0]).find(x=>r.app[x]);
+  return a?APPETITE.find(x=>x[0]===a)[3]:'';
+}
+
+/* ---------- Wochenplan ---------- */
+function slots(){
+  const d=S.days.slice().sort((a,b)=>a-b),out=[];
+  for(let i=0;i<d.length;i++){
+    if(S.reste&&i+1<d.length&&d[i+1]===d[i]+1){out.push({d:d[i],cook:true,mult:2});out.push({d:d[i+1],cook:false});i++;}
+    else out.push({d:d[i],cook:true,mult:1});
+  }
+  return out;
+}
+function pickWeighted(pool,n){
+  const p=pool.slice(),out=[];
+  while(out.length<n&&p.length){
+    let tot=p.reduce((a,r)=>a+score(r),0),x=Math.random()*tot,i=0;
+    for(;i<p.length;i++){x-=score(p[i]);if(x<=0)break;}
+    out.push(p.splice(Math.min(i,p.length-1),1)[0]);
+  }
+  while(out.length<n)out.push(pool[Math.floor(Math.random()*pool.length)]);
+  return out;
+}
+function generatePlan(){
+  const sl=slots(),cookSlots=sl.filter(s=>s.cook),pool=MEALS.filter(forPlan);
+  S.checked={};S.planStore=null;
+  if(!pool.length||!cookSlots.length){S.plan=[];return;}
+  let best=null,cheap=null;
+  for(let t=0;t<350;t++){
+    const rs=pickWeighted(pool,cookSlots.length);
+    const ent=rs.map((r,i)=>({r,mult:cookSlots[i].mult}));
+    const c=cheapest(s=>buildList(ent,s).total).c;
+    const sc=rs.reduce((a,r)=>a+score(r),0)+Math.random()*2;
+    if(!cheap||c<cheap.c)cheap={rs,c};
+    if(c<=S.budget&&(!best||sc>best.sc))best={rs,sc};
+  }
+  const rs=(best||cheap).rs;let k=0,last=null;
+  S.plan=sl.map(s=>{if(s.cook){last=rs[k++].id;return {d:s.d,cook:true,mult:s.mult,rid:last};}return {d:s.d,cook:false,rid:last};});
+}
+function swapSlot(i){
+  const sl=S.plan[i];if(!sl||!sl.cook)return;
+  const used=new Set(S.plan.map(s=>s.rid)),pool=MEALS.filter(r=>forPlan(r)&&!used.has(r.id));
+  if(!pool.length)return toast('Keine weiteren passenden Rezepte');
+  let fb=null;
+  for(const r of pickWeighted(pool,Math.min(60,pool.length))){
+    const ent=S.plan.map((s,j)=>s.cook?{r:j===i?r:RM[s.rid],mult:s.mult}:null).filter(Boolean);
+    const c=cheapest(s=>buildList(ent,s).total).c;
+    if(c<=S.budget){fb={r};break;}
+    if(!fb||c<fb.c)fb={r,c};
+  }
+  setSlot(i,fb.r.id);
+}
+function setSlot(i,rid){
+  const old=S.plan[i].rid;S.plan[i].rid=rid;
+  if(S.plan[i+1]&&!S.plan[i+1].cook&&S.plan[i+1].rid===old)S.plan[i+1].rid=rid;
+  S.checked={};
+}
+function weekDate(d){const now=new Date(),mon=new Date(now);mon.setHours(0,0,0,0);mon.setDate(now.getDate()-((now.getDay()+6)%7));const x=new Date(mon);x.setDate(mon.getDate()+d);return x;}
+
+/* ---------- Helfer ---------- */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const eur=v=>v.toFixed(2).replace('.',',')+' €';
+const eurR=v=>Math.round(v)+' €';
+function fmtAmt(I,a){
+  if(I.u==='stk'){const r=Math.round(a*2)/2;return (r<=0.5?'½':String(r).replace('.',','))+' Stk';}
+  if(a>=1000)return String(Math.round(a/100)/10).replace('.',',')+(I.u==='g'?' kg':' l');
+  if(a<10)return Math.max(1,Math.round(a))+' '+I.u;
+  const s=a>=100?10:5;return Math.round(a/s)*s+' '+I.u;
+}
+const fmtPack=(I,q)=>I.u==='stk'?q+' Stk':q>=1000?String(q/1000).replace('.',',')+(I.u==='g'?' kg':' l'):q+' '+I.u;
+const imgSm=r=>r.img?r.img+'/preview':'';
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}
+function stepKind(t){t=t.toLowerCase();
+  if(/oven|bake|roast|grill/.test(t))return ['♨️','Backen'];if(/fry|brown|sear|sauté|saute|sizzle/.test(t))return ['🍳','Braten'];
+  if(/boil|simmer|cook|stew/.test(t))return ['🍲','Kochen'];if(/chop|slice|dice|cut|peel|grate|mince/.test(t))return ['🔪','Schneiden'];
+  if(/mix|stir|whisk|combine|toss|blend/.test(t))return ['🥣','Mischen'];if(/serve|garnish|plate/.test(t))return ['🍽️','Servieren'];return ['📝','Vorbereiten'];}
+
+/* ---------- Rendering ---------- */
+const app=document.getElementById('app');
+const OB=['plz','locate','shops','who','days','budget','appetite','diet','dislikes','allergies','kitchen'];
+function render(){
+  let h='';
+  if(S.screen==='ob')h=renderOb();else if(S.screen==='loading')h=renderLoading();else h=renderMain();
+  if(UI.open)h+=renderDetail();
+  if(UI.list)h+=renderList();
+  if(UI.cook)h+=renderCook();
+  const y=window.scrollY;app.innerHTML=h;
+  if(S.screen==='main'&&!UI.keepScrollReset)window.scrollTo(0,y);
+  save();
+}
+function obShell(inner,btnTxt,ok,act){
+  const p=Math.round((S.ob+1)/OB.length*100);
+  return `${S.ob>0?`<button class="back" data-a="obBack">← Zurück</button>`:'<div style="height:28px"></div>'}
+  <div class="prog"><span style="width:${p}%"></span></div>${inner}
+  <div class="footer"><div><button class="btn" data-a="${act||'obNext'}" ${ok?'':'disabled'}>${btnTxt}</button></div></div>`;
+}
+function tiles(list,sel,act,cls){
+  return `<div class="grid2 ${cls||''}">${list.map(([id,n,e])=>`<button class="tile ${sel.includes(id)?'on':''}" data-a="${act}" data-v="${id}"><span class="e">${e}</span>${n}</button>`).join('')}</div>`;
+}
+function renderOb(){
+  const s=OB[S.ob];
+  if(s==='plz'){const reg=region(S.plz);
+    return obShell(`<h1>Wie lautet deine PLZ?</h1><p class="sub">Damit wir die Supermärkte in deiner Region finden.</p>
+      <input id="plz" class="plz" inputmode="numeric" autocomplete="postal-code" maxlength="4" placeholder="1010" value="${esc(S.plz)}">
+      <p class="small muted" id="reg" style="text-align:center">${reg?'📍 '+reg:'4-stellige österreichische Postleitzahl'}</p>`,'Weiter',!!reg);}
+  if(s==='locate')return `<div class="globe">🌍</div><p class="serif" style="text-align:center;font-size:1.2rem">Lokalisiere ${esc(S.plz)}…</p><p class="muted small" style="text-align:center">${region(S.plz)}</p>`;
+  if(s==='shops')return obShell(`<h1>Wo kaufst du ein?</h1><p class="sub">📍 ${esc(S.plz)} · ${region(S.plz)}<br>Wähle deine Supermärkte. Wir rechnen nur mit diesen Preisen.</p>
+    <div class="grid2">${STORES.map(st=>{const ok=storeOK(st);return `<button class="tile ${S.shops.includes(st.id)?'on':''}" data-a="shop" data-v="${st.id}" ${ok?'':'disabled'}><span class="e">🛒</span>${st.n}${ok?'':'<span class="tiny muted">nicht in deiner Region</span>'}</button>`;}).join('')}</div>`,'Weiter',S.shops.length>0);
+  if(s==='who')return obShell(`<h1>Für wen kochst du?</h1><p class="sub">Die Portionen passen wir automatisch an.</p>
+    <div class="card"><p class="muted small" style="text-align:center;margin:0 0 10px">Erwachsene</p><div class="stepper"><button data-a="dec" data-k="adults">−</button><b>${S.adults}</b><button data-a="inc" data-k="adults">+</button></div></div>
+    <div class="card"><p class="muted small" style="text-align:center;margin:0 0 10px">Kinder</p><div class="stepper"><button data-a="dec" data-k="kids">−</button><b>${S.kids}</b><button data-a="inc" data-k="kids">+</button></div></div>`,'Weiter',S.adults>0);
+  if(s==='days')return obShell(`<h1>An welchen Tagen kochst du normalerweise?</h1><p class="sub">Wir planen nur Abendessen für diese Tage.</p>
+    <div class="days">${DAYN.map((d,i)=>`<button class="${S.days.includes(i)?'on':''}" data-a="day" data-v="${i}">${d}<i>${S.days.includes(i)?'✓':''}</i></button>`).join('')}</div>`,'Weiter',S.days.length>0);
+  if(s==='budget')return obShell(`<h1>Wie hoch ist dein Wochenbudget?</h1><p class="sub">Für ${S.days.length} Abendessen und ${persons()} ${persons()===1?'Person':'Personen'}.</p>
+    <div class="bignum" id="bn">${S.budget} €</div><p class="muted small" style="text-align:center">pro Woche</p>
+    <input type="range" id="budget" min="15" max="250" step="1" value="${S.budget}"><div class="row between tiny muted"><span>15 €</span><span>250 €</span></div>`,'Weiter',true);
+  if(s==='appetite')return obShell(`<h1>Worauf hast du Appetit?</h1><p class="sub">Wähle bis zu 3.</p>${tiles(APPETITE,S.appetite,'app')}`,'Weiter',true);
+  if(s==='diet')return obShell(`<h1>Besondere Ernährungsweise?</h1><p class="sub">Wir zeigen nur passende Rezepte.</p>${tiles(DIETS,[S.diet],'diet')}`,'Weiter',true);
+  if(s==='dislikes')return obShell(`<h1>Gibt es etwas, das du nicht isst?</h1><p class="sub">Wähle alles aus, was nicht auf den Teller soll.</p>${tiles(DISLIKES,S.dislikes,'dis','list-tiles')}`,S.dislikes.length?'Weiter':'Ich esse alles',true);
+  if(s==='allergies')return obShell(`<h1>Allergien?</h1><p class="sub">Rezepte mit diesen Zutaten schließen wir aus. Prüfe trotzdem immer die Zutatenliste.</p>${tiles(ALLERGIES,S.allergies,'all')}`,S.allergies.length?'Weiter':'Keine Allergien — weiter',true);
+  if(s==='kitchen')return obShell(`<h1>Was hast du in deiner Küche?</h1><p class="sub">Tippe auf deine Geräte. Wir zeigen nur Rezepte, die du damit kochen kannst.</p>
+    <div class="kitchen">${TOOLS.map(([id,n,e])=>`<button class="${S.tools.includes(id)?'on':''}" data-a="tool" data-v="${id}"><span class="e">${e}</span>${n}</button>`).join('')}</div>
+    <p class="tiny muted" style="margin-top:-6px">Ohne Backofen ersetzt die Heißluftfritteuse ihn, wo möglich.</p>
+    <div class="card"><label class="switch"><input type="checkbox" data-a="reste" ${S.reste?'checked':''}><span><b>Platz für Reste?</b><br><span class="small muted">Wir kochen doppelt und planen am Folgetag Reste ein. Spart Zeit und Geld.</span></span></label></div>
+    <div class="card"><label class="switch"><input type="checkbox" data-a="pantry" ${S.pantry?'checked':''}><span><b>Grundzutaten vorhanden</b><br><span class="small muted">Salz, Pfeffer, Öl, Zucker, Mehl-Backzutaten & Gewürze nicht einrechnen.</span></span></label></div>`,
+    'Meinen Plan erstellen',S.tools.includes('herd')||S.tools.length>0,'build');
+  return '';
+}
+function renderLoading(){
+  return `<div class="brand" style="margin-top:20px">🍽️ Kochbudget</div><h1 style="text-align:center">Wir stellen deine Woche zusammen…</h1>
+  <div class="basket">🧺</div>
+  <ul class="checks">${UI.loadSteps.map(s=>`<li class="${s.st}"><i>${s.st==='done'?'✓':s.st==='fail'?'!':''}</i><span>${s.t}</span></li>`).join('')}</ul>`;
+}
+async function build(){
+  S.screen='loading';
+  UI.loadSteps=[{t:'Wir lesen deine Antworten',st:'done'},{t:'Rezepte werden geladen',st:'run'},{t:'Preise für deine Supermärkte',st:''},{t:`Die Woche bleibt unter ${S.budget} €`,st:''},{t:'Wir erstellen eine übersichtliche Einkaufsliste',st:''}];
+  render();
+  const step=(i,st,t)=>{UI.loadSteps[i].st=st;if(t)UI.loadSteps[i].t=t;render();};
+  try{setMeals(await fetchMeals());step(1,'done',`${MEALS.length} Rezepte geladen`);}
+  catch(e){step(1,'fail',navigator.onLine===false?'Rezepte konnten nicht geladen werden: keine Internetverbindung.':'Rezepte konnten nicht geladen werden. Wahrscheinlich blockiert die Vorschau den Internetzugriff (z. B. in der Claude- oder Dateien-App). Öffne die Datei in einem richtigen Browser wie Safari oder Chrome oder über eine Webadresse.');
+    UI.loadSteps.push({t:'<button class="btn sm" data-a="build">Nochmal versuchen</button> <button class="btn sm ghost" data-a="toOb">Zurück</button>',st:''});render();return;}
+  step(2,'run');
+  let ok=liveFresh();
+  if(!ok)ok=await loadLive();
+  const ls_=liveStores();
+  step(2,ok&&ls_.length?'done':'done',ok&&ls_.length?`Aktuelle Preise für ${ls_.map(s=>storeById(s).n).join(', ')}`:'Preise geschätzt (Live-Preise nicht erreichbar)');
+  step(3,'run');await new Promise(r=>setTimeout(r,50));
+  if(!MEALS.some(forPlan)){step(3,'fail','Keine Rezepte passen zu deinen Angaben. Lockere Filter oder wähle mehr Geräte.');
+    UI.loadSteps.push({t:'<button class="btn sm" data-a="toOb">Angaben ändern</button>',st:''});render();return;}
+  generatePlan();
+  const tot=buildList(planEntries(),planStore()).total;
+  step(3,tot<=S.budget?'done':'fail',tot<=S.budget?`Die Woche bleibt unter ${S.budget} €`:`Günstigster Plan: ${eurR(tot)} (über Budget)`);
+  step(4,'done');
+  await new Promise(r=>setTimeout(r,700));
+  S.screen='main';S.tab='plan';render();window.scrollTo(0,0);
+  translateTitles(S.plan.map(s=>RM[s.rid]));
+}
+
+function renderMain(){
+  let h='';
+  if(S.tab==='plan')h=renderPlan();else if(S.tab==='explore')h=renderExplore();else if(S.tab==='favs')h=renderFavs();else h=renderProfile();
+  return h+`<nav class="nav"><div>${[['plan','🍴','Plan'],['explore','🔍','Entdecken'],['favs','♥','Favoriten'],['profile','👤','Profil']].map(([v,i,n])=>`<button class="${S.tab===v?'on':''}" data-a="tab" data-v="${v}"><i>${i}</i>${n}</button>`).join('')}</div></nav>`;
+}
+function greet(){const h=new Date().getHours();return h<11?'Guten Morgen!':h<17?'Guten Tag!':'Guten Abend!';}
+function renderPlan(){
+  if(!MEALS.length)return `<div class="card">Rezepte werden geladen…</div>`;
+  if(!S.plan.length)return `<div class="brand">🍽️ Kochbudget</div><h1 class="hello">${greet()}</h1><div class="card">Für deine Angaben gibt es keinen Plan. <button class="btn sm" data-a="toOb">Angaben ändern</button></div>`;
+  const st=planStore(),ent=planEntries(),L=buildList(ent,st),tot=L.total,over=tot>S.budget;
+  const cmp=S.shops.map(s=>({s,c:buildList(ent,s).total})).sort((a,b)=>a.c-b.c);
+  const counts={};L.items.filter(i=>!i.pantry).forEach(i=>counts[i.aisle]=(counts[i.aisle]||0)+1);
+  const nItems=L.items.filter(i=>!i.pantry).length;
+  const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const pct=Math.min(1,tot/S.budget),C=2*Math.PI*34;
+  const cooks=S.plan.filter(s=>s.cook).length;
+  return `<div class="brand">🍽️ Kochbudget</div><h1 class="hello">${greet()}</h1>
+  <div class="planfor small muted">geplant für <select data-a="planStore" aria-label="Supermarkt">${cmp.map(x=>`<option value="${x.s}" ${x.s===st?'selected':''}>${storeById(x.s).n}</option>`).join('')}</select></div>
+  <div class="einkauf" data-a="openList">
+    <span class="deco" style="left:8%;top:8%">🌶️</span><span class="deco" style="left:32%;top:14%">🧄</span><span class="deco" style="left:18%;top:42%">🌿</span><span class="deco" style="left:40%;top:46%">🍅</span>
+    <div class="txt"><h2 style="color:#fff;margin:0">Einkauf</h2><div class="small" style="opacity:.85">${nItems} Artikel nach Gang</div><span class="pill">Liste öffnen →</span></div>
+    <div class="receipt"><b>🛒 ${storeById(st).n}</b>${top.map(([a,c])=>`<div class="r"><span>${AISLE[a]}</span><span>${c}</span></div>`).join('')}
+      <div class="r tot"><span>${nItems} Artikel</span><span>${eurR(tot)}</span></div><div class="barcode"></div></div>
+  </div>
+  <div class="card ring">
+    <svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="34" fill="none" stroke="var(--line)" stroke-width="8"/>
+      <circle cx="42" cy="42" r="34" fill="none" stroke="${over?'var(--red)':'var(--yellow)'}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*pct} ${C}" transform="rotate(-90 42 42)"/>
+      <text x="42" y="47" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-weight="700" font-size="16" fill="var(--ink)">${eurR(tot)}</text></svg>
+    <div class="grow"><h3>Plankosten</h3><div class="small muted">${cooks} Mal kochen, ${S.plan.length} Abendessen für ${eurR(tot)}</div>
+      <div class="small ${over?'bad':'ok'}">${over?'✕':'✓'} Budget: ${S.budget} €${over?` (${eurR(tot-S.budget)} drüber)`:''}</div>
+      ${cmp.length>1?`<details class="small" style="margin-top:6px"><summary class="muted" style="cursor:pointer">Deine Shops vergleichen</summary><div class="cmp" style="margin-top:6px">${cmp.map((x,i)=>`<span class="${i===0?'best':''}">${storeById(x.s).n}${liveStores().includes(x.s)?'<span class="livedot" title="Live-Preise"></span>':''}</span><span class="${i===0?'best':''}">${eur(x.c)}</span>`).join('')}</div></details>`:''}
+    </div>
+  </div>
+  <div class="row between" style="margin:18px 0 10px"><div><h2 style="margin:0">Deine Woche</h2><div class="small muted">${S.plan.length} Kochabende</div></div><button class="btn sm ghost" data-a="reroll">🎲 Neu</button></div>
+  ${S.plan.map((s,i)=>{const r=RM[s.rid];if(!r)return '';const dt=weekDate(s.d);
+    if(!s.cook)return `<div class="day left" data-a="open" data-v="${r.id}"><div class="strip"><small>${DAYN[s.d].toUpperCase()}</small><b>${dt.getDate()}</b></div>
+      <div class="body"><img class="thumb" src="${imgSm(r)}" alt="" loading="lazy" style="opacity:.6"><div class="grow"><div class="small muted">Reste vom Vortag</div><div class="ttl">${esc(title(r))}</div><div class="meta">0 € extra</div></div></div></div>`;
+    const c=recipeCost(r,st,portions()*s.mult);const tag=tagOf(r);
+    return `<div class="day" data-a="open" data-v="${r.id}"><div class="strip"><small>${DAYN[s.d].toUpperCase()}</small><b>${dt.getDate()}</b></div>
+      <div class="body"><img class="thumb" src="${imgSm(r)}" alt="" loading="lazy"><div class="grow"><div class="ttl">${esc(title(r))}</div>${tag?`<span class="tag">${tag}</span>`:''}
+      <div class="meta">⏱ ${r.time} Min | 👤 ${persons()}${s.mult>1?' ×2':''} | ${eurR(c)}</div></div>
+      <button class="iconbtn" data-a="swap" data-v="${i}" aria-label="Gericht tauschen">🔄</button></div></div>`;}).join('')}
+  <p class="note">Rezepte: TheMealDB · Preise: ${liveStores().length?'heisse-preise.io (Live) + Schätzungen':'Schätzungen'} · Salz, Öl & Gewürze ${S.pantry?'nicht ':''}eingerechnet</p>`;
+}
+function exploreList(){
+  const q=S.exQ.trim().toLowerCase();
+  let rs=MEALS.filter(r=>(S.exAll||eligible(r))&&(!S.exCat||r.app[S.exCat]));
+  if(q)rs=rs.filter(r=>(r.n+' '+title(r)+' '+r.area+' '+r.ingr.map(g=>g.n+' '+(g.id?DB[g.id].de:'')).join(' ')).toLowerCase().includes(q));
+  return rs;
+}
+function exploreCards(){
+  const rs=exploreList(),st=planStore();
+  if(!rs.length)return `<div class="card muted">Nichts gefunden.</div>`;
+  const shown=rs.slice(0,S.exN);
+  return `<p class="small muted">${rs.length} Rezepte</p>`+shown.map(r=>`<div class="day" data-a="open" data-v="${r.id}" data-from="explore"><div class="body"><img class="thumb" src="${imgSm(r)}" alt="" loading="lazy">
+    <div class="grow"><div class="ttl">${esc(title(r))}</div>${tagOf(r)?`<span class="tag">${tagOf(r)}</span>`:''}<div class="meta">⏱ ${r.time} Min | ${eurR(recipeCost(r,st))} bei ${storeById(st).n}${eligible(r)?'':' | <span class="bad">passt nicht zu deinen Angaben</span>'}</div></div>
+    <button class="iconbtn" data-a="fav" data-v="${r.id}" aria-label="Favorit">${S.favs.includes(r.id)?'♥':'♡'}</button></div></div>`).join('')+
+    (rs.length>S.exN?`<button class="btn ghost" data-a="more">Mehr anzeigen</button>`:'');
+}
+function renderExplore(){
+  return `<h1>Entdecken</h1>
+  <input type="search" id="exq" placeholder="Rezept oder Zutat suchen…" value="${esc(S.exQ)}" style="margin-bottom:10px">
+  <div class="chips"><button class="${!S.exCat?'on':''}" data-a="exCat" data-v="">Alle</button>${APPETITE.map(([id,n,e])=>`<button class="${S.exCat===id?'on':''}" data-a="exCat" data-v="${id}">${e} ${n}</button>`).join('')}</div>
+  <label class="switch small" style="margin-bottom:10px"><input type="checkbox" data-a="exAll" ${S.exAll?'checked':''}> Auch Rezepte zeigen, die nicht zu meinen Angaben passen</label>
+  <div id="exlist">${exploreCards()}</div>`;
+}
+function renderFavs(){
+  const rs=S.favs.map(id=>RM[id]).filter(Boolean),st=planStore();
+  return `<h1>Favoriten</h1>${rs.length?rs.map(r=>`<div class="day" data-a="open" data-v="${r.id}" data-from="explore"><div class="body"><img class="thumb" src="${imgSm(r)}" alt="" loading="lazy">
+    <div class="grow"><div class="ttl">${esc(title(r))}</div><div class="meta">⏱ ${r.time} Min | ${eurR(recipeCost(r,st))}</div></div><button class="iconbtn" data-a="fav" data-v="${r.id}">♥</button></div></div>`).join('')
+    :`<div class="card muted">Tippe bei einem Rezept auf ♡, um es hier zu speichern.</div>`}`;
+}
+function renderProfile(){
+  const lst=liveStores();
+  const sum=[['PLZ',`${S.plz} · ${region(S.plz)}`],['Supermärkte',S.shops.map(s=>storeById(s).n).join(', ')],['Personen',`${S.adults} Erw.${S.kids?`, ${S.kids} Kinder`:''}`],
+    ['Kochtage',S.days.slice().sort().map(d=>DAYN[d]).join(', ')],['Budget',S.budget+' € / Woche'],['Ernährung',DIETS.find(d=>d[0]===S.diet)[1]],
+    ['Isst nicht',S.dislikes.map(d=>DISLIKES.find(x=>x[0]===d)[1]).join(', ')||'–'],['Allergien',S.allergies.map(d=>ALLERGIES.find(x=>x[0]===d)[1]).join(', ')||'–'],
+    ['Küche',S.tools.map(t=>TOOLS.find(x=>x[0]===t)[1]).join(', ')]];
+  return `<h1>Profil</h1>
+  <div class="card">${sum.map(([k,v])=>`<div class="row between" style="padding:5px 0;border-bottom:1px solid var(--line)"><span class="muted small">${k}</span><span class="small" style="text-align:right">${esc(v)}</span></div>`).join('')}
+    <button class="btn" style="margin-top:14px" data-a="toOb">Fragen neu beantworten</button></div>
+  <div class="card"><h3>Preise</h3>
+    <p class="small">${LIVE?`Live-Preise vom ${new Date(LIVE.t).toLocaleDateString('de-AT')}: ${lst.length?lst.map(s=>storeById(s).n).join(', '):'keiner deiner Shops enthalten'}.`:'Aktuell werden Schätzpreise verwendet.'}
+    ${S.shops.filter(s=>!lst.includes(s)).length?`<br><span class="muted">Geschätzt: ${S.shops.filter(s=>!lst.includes(s)).map(s=>storeById(s).n).join(', ')}</span>`:''}${UI.priceMsg?`<br><span class="bad">Laden fehlgeschlagen: ${esc(UI.priceMsg)}</span>`:''}</p>
+    <p class="tiny muted">Live-Preise kommen von heisse-preise.io (österreichische Supermarktpreise). Zutaten werden automatisch passenden Produkten zugeordnet, deshalb können einzelne Preise danebenliegen.</p>
+    <div class="row" style="flex-wrap:wrap"><button class="btn sm" data-a="live">Live-Preise laden</button><label class="btn sm ghost" style="cursor:pointer">Preisdatei wählen<input type="file" id="pricefile" accept=".json,application/json" hidden></label>${LIVE?`<button class="btn sm ghost" data-a="noLive">Nur Schätzpreise</button>`:''}</div>
+    <p class="tiny muted" style="margin-bottom:0">Falls das Laden blockiert wird: Öffne <a href="https://heisse-preise.io/data/latest-canonical.json" target="_blank" rel="noopener">die Preisdatei</a> im Browser, speichere sie und wähle sie hier aus.</p></div>
+  <div class="card"><h3>Rezepte</h3><p class="small">${MEALS.length} Rezepte von TheMealDB (englisch). Zutaten werden ins Deutsche übertragen.</p>
+    <label class="switch small"><input type="checkbox" data-a="autoTr" ${S.autoTr?'checked':''}> Rezepttitel automatisch übersetzen (MyMemory)</label>
+    <div class="row" style="margin-top:10px"><button class="btn sm ghost" data-a="reloadMeals">Rezepte neu laden</button></div></div>
+  <div class="card"><button class="btn ghost" data-a="reset">Alles zurücksetzen</button></div>`;
+}
+function renderDetail(){
+  const r=RM[UI.open];if(!r)return '';
+  const st=planStore(),F=portions();
+  const cmp=S.shops.map(s=>({s,c:recipeCost(r,s,F)})).sort((a,b)=>a.c-b.c);
+  const trSteps=TR['steps:'+r.id];
+  const steps=trSteps||r.steps;
+  const planIdx=S.plan.findIndex(s=>s.cook&&s.rid===r.id);
+  return `<div class="overlay"><div class="in">
+  <div class="hero">${r.img?`<img src="${r.img}" alt="">`:''}<button class="iconbtn" style="left:14px" data-a="close">←</button><button class="iconbtn" style="right:14px" data-a="fav" data-v="${r.id}">${S.favs.includes(r.id)?'♥':'♡'}</button></div>
+  <div class="pad">
+    <h1>${esc(title(r))}</h1>${TR[r.n]?`<div class="tiny muted">${esc(r.n)}</div>`:''}
+    <div style="margin:6px 0 10px">${tagOf(r)?`<span class="tag">${tagOf(r)}</span>`:''}<span class="tag" style="background:var(--chip);color:var(--muted)">${esc(r.area)}</span><span class="tag" style="background:var(--chip);color:var(--muted)">${esc(r.cat)}</span></div>
+    <div class="meta">⏱ ca. ${r.time} Min | 👤 ${persons()} ${persons()===1?'Person':'Personen'}</div>
+    ${!eligible(r)?`<div class="warn" style="margin-top:10px">Dieses Rezept passt nicht zu deinen Angaben (Ernährung, Allergien oder Küche).</div>`:''}
+    ${r.tools.has('backofen')&&!S.tools.includes('backofen')?`<div class="warn" style="margin-top:10px">Braucht einen Backofen. Mit der Heißluftfritteuse geht es meist auch, Zeiten und Mengen ggf. anpassen.</div>`:''}
+    <div class="card" style="margin-top:14px"><div class="row between"><h3>Preis</h3><span class="serif" style="font-size:1.4rem;font-weight:700">${eur(cmp[0].c)}</span></div>
+      <div class="cmp small" style="margin-top:8px">${cmp.map((x,i)=>`<span class="${i===0?'best':''}">${storeById(x.s).n}${liveStores().includes(x.s)?'<span class="livedot"></span>':''}</span><span class="${i===0?'best':''}">${eur(x.c)} · ${eur(x.c/persons())}/Port.</span>`).join('')}</div>
+      <p class="tiny muted" style="margin:8px 0 0">Anteilige Kosten der verwendeten Mengen. Nur deine gewählten Shops.</p></div>
+    ${UI.from==='explore'&&S.plan.length?`<div class="card"><h3>Einplanen</h3><div class="row" style="margin-top:8px"><select id="slotSel">${S.plan.map((s,i)=>s.cook?`<option value="${i}">${DAYL[s.d]}: ${esc(title(RM[s.rid]||{n:'?'}))}</option>`:'').join('')}</select><button class="btn sm" data-a="putPlan" data-v="${r.id}">Ersetzen</button></div></div>`:''}
+    <h2 style="margin-top:20px">Zutaten</h2><div class="card" style="padding:4px 16px">
+    ${r.ingr.map(g=>{
+      if(!g.id)return `<div class="ing"><span class="grow">${esc(g.n)} <span class="tiny muted">(Preis geschätzt)</span></span><span class="a">${esc(g.me)}</span></div>`;
+      const I=DB[g.id];if(I.f.includes('free'))return `<div class="ing"><span class="grow">${I.de}</span><span class="a">${esc(g.me)}</span></div>`;
+      const a=g.amt*F,pan=S.pantry&&I.f.includes('p');
+      return `<div class="ing"><span class="grow">${I.de}${pan?' <span class="tiny muted">(Vorrat)</span>':''}</span><span class="a">${g.tiny?'etwas':fmtAmt(I,a)}</span><span class="a" style="min-width:58px;text-align:right">${pan?'–':eur(a*sp(g.id,st).u)}</span></div>`;}).join('')}
+    </div><p class="tiny muted">Preise bei ${storeById(st).n}. Mengen umgerechnet auf ${persons()} ${persons()===1?'Person':'Personen'}.</p>
+    <div class="row between" style="margin-top:20px"><h2 style="margin:0">Zubereitung</h2>${trSteps?'':`<button class="btn sm ghost" data-a="trSteps" data-v="${r.id}" ${UI.trBusy?'disabled':''}>${UI.trBusy?'Übersetze…':'🇦🇹 Übersetzen'}</button>`}</div>
+    <div style="margin-top:12px">${steps.map((t,i)=>{const [ic,k]=stepKind(r.steps[i]||t);return `<div class="step"><div class="ic">${ic}</div><div><small>SCHRITT ${i+1} · ${k.toUpperCase()}</small>${esc(t)}</div></div>`;}).join('')}</div>
+    ${planIdx>=0?`<button class="btn ghost" data-a="swapDetail" data-v="${planIdx}">🔄 Anderes Gericht für ${DAYL[S.plan[planIdx].d]}</button>`:''}
+  </div></div>
+  <div class="footer" style="z-index:21"><div><button class="btn y" data-a="cook">Loslegen</button></div></div></div>`;
+}
+function renderList(){
+  const ent=planEntries(),st=UI.listStore&&S.shops.includes(UI.listStore)?UI.listStore:planStore(),L=buildList(ent,st);
+  const buy=L.items.filter(i=>!i.pantry),pantry=L.items.filter(i=>i.pantry);
+  const open=buy.filter(i=>!S.checked[i.key]).reduce((a,i)=>a+i.cost,0);
+  const groups=AISLE_ORDER.map(a=>[a,buy.filter(i=>i.aisle===a).sort((x,y)=>x.name.localeCompare(y.name))]).filter(g=>g[1].length);
+  return `<div class="overlay"><div class="in pad">
+    <div class="row between"><button class="iconbtn" data-a="closeList">←</button><h2 style="margin:0">Einkaufsliste</h2><button class="iconbtn" data-a="share" aria-label="Teilen">⤴</button></div>
+    <div class="card" style="margin-top:14px"><div class="row between"><select data-a="listStore" style="width:auto">${S.shops.map(s=>`<option value="${s}" ${s===st?'selected':''}>${storeById(s).n}</option>`).join('')}</select>
+      <div style="text-align:right"><div class="serif" style="font-size:1.4rem;font-weight:700">${eur(L.total)}</div><div class="tiny muted">noch offen: ${eur(open)}</div></div></div></div>
+    ${groups.map(([a,items])=>`<div class="aisle">${AISLE[a]}</div>${items.map(i=>`<label class="li ${S.checked[i.key]?'done':''}"><input type="checkbox" data-a="check" data-v="${esc(i.key)}" ${S.checked[i.key]?'checked':''}>
+      <span class="grow">${esc(i.name)}${i.live?'<span class="livedot" title="Live-Preis"></span>':''}<br><span class="tiny muted">${i.est?'Preis geschätzt':`${i.packs}× ${fmtPack(i.I,i.q)} · benötigt ${fmtAmt(i.I,i.amt)}`}</span></span><span class="small">${eur(i.cost)}</span></label>`).join('')}`).join('')}
+    ${pantry.length?`<div class="aisle">Hast du vermutlich zuhause</div><p class="small muted">${pantry.map(i=>i.name).join(', ')}</p>`:''}
+    <p class="note">Ganze Packungen gerechnet. Grüner Punkt = Live-Preis, sonst Schätzung.</p>
+  </div></div>`;
+}
+function renderCook(){
+  const r=RM[UI.cook.id];if(!r)return '';
+  const steps=TR['steps:'+r.id]||r.steps,i=UI.cook.i;
+  return `<div class="cook"><div class="in">
+    <div class="row between"><button class="iconbtn" data-a="cookClose">✕</button><span class="small muted">Schritt ${i+1} von ${steps.length}</span><span style="width:36px"></span></div>
+    <div class="dots" style="margin-top:14px">${steps.map((_,j)=>`<span class="${j<=i?'on':''}"></span>`).join('')}</div>
+    <div class="txt"><div style="font-size:2.2rem;margin-bottom:10px">${stepKind(r.steps[i]||steps[i])[0]}</div>${esc(steps[i])}</div>
+    <div class="row"><button class="btn ghost" data-a="cookPrev" ${i===0?'disabled':''}>Zurück</button><button class="btn ${i===steps.length-1?'y':''}" data-a="cookNext">${i===steps.length-1?'Fertig 🎉':'Weiter'}</button></div>
+  </div></div>`;
+}
+
+/* ---------- Events ---------- */
+app.addEventListener('click',async e=>{
+  const el=e.target.closest('[data-a]');if(!el||el.tagName==='SELECT'||el.tagName==='INPUT')return;
+  const a=el.dataset.a,v=el.dataset.v;
+  const tog=(arr,x)=>arr.includes(x)?arr.filter(y=>y!==x):arr.concat(x);
+  switch(a){
+    case 'obNext':
+      S.ob++;
+      if(OB[S.ob]==='locate'){render();setTimeout(()=>{S.shops=S.shops.filter(id=>storeOK(storeById(id)));S.ob++;render();},1500);return;}
+      break;
+    case 'obBack':S.ob--;if(OB[S.ob]==='locate')S.ob--;break;
+    case 'shop':S.shops=tog(S.shops,v);SPC={};break;
+    case 'inc':S[el.dataset.k]=Math.min(12,S[el.dataset.k]+1);break;
+    case 'dec':S[el.dataset.k]=Math.max(el.dataset.k==='adults'?1:0,S[el.dataset.k]-1);break;
+    case 'day':S.days=tog(S.days,+v);break;
+    case 'app':if(S.appetite.includes(v))S.appetite=S.appetite.filter(x=>x!==v);else if(S.appetite.length<3)S.appetite=S.appetite.concat(v);else toast('Maximal 3');break;
+    case 'diet':S.diet=v;break;
+    case 'dis':S.dislikes=tog(S.dislikes,v);break;
+    case 'all':S.allergies=tog(S.allergies,v);break;
+    case 'tool':S.tools=tog(S.tools,v);break;
+    case 'build':build();return;
+    case 'toOb':S.screen='ob';S.ob=0;UI.open=null;UI.list=false;render();window.scrollTo(0,0);return;
+    case 'tab':S.tab=v;render();window.scrollTo(0,0);if(v==='explore')translateTitles(exploreList().slice(0,12));return;
+    case 'open':if(e.target.closest('[data-a="swap"],[data-a="fav"]'))return;UI.open=v;UI.from=el.dataset.from||'plan';render();document.querySelector('.overlay').scrollTop=0;translateTitles([RM[v]]);return;
+    case 'close':UI.open=null;break;
+    case 'fav':e.stopPropagation();S.favs=tog(S.favs,v);break;
+    case 'swap':e.stopPropagation();swapSlot(+v);translateTitles(S.plan.map(s=>RM[s.rid]));break;
+    case 'swapDetail':swapSlot(+v);UI.open=S.plan[+v].rid;translateTitles([RM[UI.open]]);break;
+    case 'putPlan':{const i=+document.getElementById('slotSel').value;setSlot(i,v);UI.open=null;S.tab='plan';toast('Eingeplant für '+DAYL[S.plan[i].d]);break;}
+    case 'reroll':generatePlan();translateTitles(S.plan.map(s=>RM[s.rid]));break;
+    case 'openList':UI.list=true;UI.listStore=null;render();document.querySelector('.overlay').scrollTop=0;return;
+    case 'closeList':UI.list=false;break;
+    case 'share':shareList();return;
+    case 'cook':UI.cook={id:UI.open,i:0};break;
+    case 'cookClose':UI.cook=null;break;
+    case 'cookPrev':UI.cook.i=Math.max(0,UI.cook.i-1);break;
+    case 'cookNext':{const r=RM[UI.cook.id],n=(TR['steps:'+r.id]||r.steps).length;if(UI.cook.i>=n-1){UI.cook=null;toast('Guten Appetit!');}else UI.cook.i++;break;}
+    case 'trSteps':{const r=RM[v];UI.trBusy=true;render();
+      try{const out=[];for(const s of r.steps)out.push(await translate(s));TR['steps:'+r.id]=out;saveTR();if(!TR[r.n])await translate(r.n).catch(()=>{});}
+      catch(err){toast('Übersetzung gerade nicht möglich: '+err.message);}
+      UI.trBusy=false;break;}
+    case 'exCat':S.exCat=v;S.exN=40;break;
+    case 'more':S.exN+=40;break;
+    case 'live':toast('Lade Preise… das kann etwas dauern');{const ok=await loadLive();toast(ok?'Live-Preise geladen':'Nicht erreichbar: '+UI.priceMsg);}break;
+    case 'noLive':LIVE=null;SPC={};try{localStorage.removeItem('kb_live');}catch(err){}break;
+    case 'reloadMeals':toast('Lade Rezepte…');try{setMeals(await fetchMeals(true));toast(MEALS.length+' Rezepte geladen');}catch(err){toast(err.message);}break;
+    case 'reset':if(confirm('Alle Angaben und den Plan löschen?')){try{['kb3','kb_live','kb_tr'].forEach(k=>localStorage.removeItem(k));}catch(err){}S=Object.assign({},DEF);LIVE=null;TR={};SPC={};UI={open:null,list:false,cook:null,loadSteps:[],priceMsg:''};}break;
+    default:return;
+  }
+  render();
+});
+app.addEventListener('change',e=>{
+  const t=e.target,a=t.dataset.a;
+  if(t.id==='pricefile'&&t.files[0]){const fr=new FileReader();fr.onload=()=>{try{const n=processLive(JSON.parse(fr.result));toast(n+' Produkte zugeordnet');}catch(err){toast('Datei ungültig: '+err.message);}render();};fr.readAsText(t.files[0]);return;}
+  if(a==='planStore'){S.planStore=t.value;}
+  else if(a==='listStore'){UI.listStore=t.value;}
+  else if(a==='check'){S.checked[t.dataset.v]=t.checked;}
+  else if(a==='reste')S.reste=t.checked;
+  else if(a==='pantry')S.pantry=t.checked;
+  else if(a==='autoTr'){S.autoTr=t.checked;if(S.autoTr)translateTitles(S.plan.map(s=>RM[s.rid]));}
+  else if(a==='exAll'){S.exAll=t.checked;S.exN=40;}
+  else return;
+  const ov=document.querySelector('.overlay'),st=ov?ov.scrollTop:0;
+  render();
+  const ov2=document.querySelector('.overlay');if(ov2)ov2.scrollTop=st;
+});
+app.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='plz'){
+    t.value=t.value.replace(/\D/g,'').slice(0,4);S.plz=t.value;
+    const reg=region(S.plz);document.getElementById('reg').textContent=reg?'📍 '+reg:'4-stellige österreichische Postleitzahl';
+    document.querySelector('[data-a="obNext"]').disabled=!reg;save();
+  }
+  if(t.id==='budget'){S.budget=+t.value;document.getElementById('bn').textContent=S.budget+' €';save();}
+  if(t.id==='exq'){S.exQ=t.value;S.exN=40;document.getElementById('exlist').innerHTML=exploreCards();save();}
+});
+app.addEventListener('keydown',e=>{if(e.target.id==='plz'&&e.key==='Enter'&&region(S.plz)){S.ob=0;document.querySelector('[data-a="obNext"]').click();}});
+app.addEventListener('error',e=>{const t=e.target;if(t.tagName==='IMG'&&/\/preview$/.test(t.src))t.src=t.src.replace(/\/preview$/,'');},true);
+async function shareList(){
+  const st=UI.listStore&&S.shops.includes(UI.listStore)?UI.listStore:planStore(),L=buildList(planEntries(),st);
+  const txt=`Einkaufsliste (${storeById(st).n}) – ${eur(L.total)}\n`+AISLE_ORDER.map(a=>{const it=L.items.filter(i=>!i.pantry&&i.aisle===a&&!S.checked[i.key]);return it.length?`\n${AISLE[a]}\n`+it.map(i=>`- ${i.est?'':i.packs+'× '}${i.name}`).join('\n'):'';}).join('');
+  try{if(navigator.share){await navigator.share({title:'Einkaufsliste',text:txt});return;}}catch(e){if(e.name==='AbortError')return;}
+  try{await navigator.clipboard.writeText(txt);toast('Liste kopiert');}catch(e){prompt('Liste kopieren:',txt);}
+}
+
+/* ---------- Start ---------- */
+(async function init(){
+  if(S.screen==='main'){
+    const c=ls.get('kb_meals');
+    if(c&&c.meals){setMeals(c.meals);render();translateTitles(S.plan.map(s=>RM[s.rid]));}
+    else{render();try{setMeals(await fetchMeals());if(!S.plan.length||S.plan.some(s=>!RM[s.rid]))generatePlan();}catch(e){toast(e.message);}render();}
+  }else{
+    if(OB[S.ob]==='locate')S.ob++;
+    render();
+  }
+})();
+</script>
+</body>
+</html>
