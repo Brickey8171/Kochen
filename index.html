@@ -186,7 +186,7 @@ salami|Salami|g|16|100|||ku|m,pk|salami
 duck,duck legs,duck breast|Ente|g|14|600|300||fl|m|ente,entenbrust,entenkeule
 turkey,turkey mince,turkey breast|Pute|g|11|500|||fl|m|pute,truthahn
 salmon,salmon fillet,salmon fillets,smoked salmon|Lachsfilet|g|22|250|125||tk|f|lachs
-cod,white fish,haddock,white fish fillets,cod fillet,pollock,hake,tilapia|Seelachs/Kabeljau|g|14|400|125||tk|f|kabeljau,seelachs,dorsch,alaska
+cod,salt cod,white fish,haddock,white fish fillets,cod fillet,pollock,hake,tilapia|Seelachs/Kabeljau|g|14|400|125||tk|f|kabeljau,seelachs,dorsch,alaska
 tuna,tinned tuna|Thunfisch (Dose)|g|11|150|||vo|f|thunfisch
 anchovy,anchovy fillet,anchovies|Sardellen|g|35|50|||vo|f|sardellen
 prawns,prawn,shrimp,king prawns,tiger prawns,raw king prawns|Garnelen|g|25|250|||tk|s|garnelen,shrimps,crevetten
@@ -404,6 +404,8 @@ function matchIng(name){
   const n=norm(name);if(!n)return null;
   for(const [k,id] of KEYS)if(k===n)return id;
   const padded=' '+n+' ';
+  // Englisch: das letzte Wort ist das Hauptwort ("salt cod" = Kabeljau, nicht Salz)
+  for(const [k,id] of KEYS)if(padded.endsWith(' '+k+' '))return id;
   for(const [k,id] of KEYS)if(padded.includes(' '+k+' '))return id;
   return null;
 }
@@ -481,10 +483,10 @@ const APPETITE=[['schnell','Schnelle Gerichte','zap','Schnelles Gericht'],['kalo
   ['wohlfuehl','Gesundes Wohlfühlessen','apple','Wohlfühlessen'],['lieferdienst','Lieferdienst, selbst gemacht','burger','Lieferdienst-Klassiker'],['eiweiss','Eiweißreich','dumbbell','Eiweißreich'],
   ['mediterran','Mediterran','branch','Mediterran'],['asiatisch','Asiatisch inspiriert','asia','Asiatisch'],['deftig','Deftige Hausmannskost','pot','Deftig']];
 const DIETS=[['keine','Keine','utensils'],['veg','Vegetarisch','leaf'],['vegan','Vegan','sprout'],['pesc','Pescetarisch','fish']];
-const DISLIKES=[['pk','Schwein','meat'],['bf','Rind','meat'],['la','Lamm','meat'],['mu','Champignons','mushroom'],['s','Meeresfrüchte','shell'],['ol','Oliven','olive'],['hot','Scharfes Essen','flame'],['to','Tofu','cube'],['au','Melanzani','eggplant'],['co','Kokos','coconut'],['kz','Koriander','herb']];
+const DISLIKES=[['pk','Schwein','meat'],['bf','Rind','meat'],['la','Lamm','meat'],['mu','Champignons','mushroom'],['f','Fisch','fish'],['s','Meeresfrüchte','shell'],['ol','Oliven','olive'],['hot','Scharfes Essen','flame'],['to','Tofu','cube'],['au','Melanzani','eggplant'],['co','Kokos','coconut'],['kz','Koriander','herb']];
 const ALLERGIES=[['pn','Erdnüsse','peanut'],['n','Nüsse','acorn'],['d','Milchprodukte','milk'],['e','Eier','egg'],['gl','Weizen / Gluten','wheat'],['so','Soja','bean'],['f','Fisch','fish'],['s','Schalentiere','shell'],['se','Sesam','seeds']];
 const TOOLS=[['herd','Herd','stove'],['backofen','Backofen','oven'],['airfryer','Heißluftfritteuse','airfryer'],['mixer','Mixer / Pürierstab','blender']];
-const TIMES=[[0,'Egal'],[20,'Bis 20 Min'],[30,'Bis 30 Min'],[45,'Bis 45 Min'],[60,'Bis 60 Min']];
+const TIMES=[[0,'Egal'],[20,'Bis 20 Min'],[30,'Bis 30 Min'],[45,'Bis 45 Min'],[60,'Bis 60 Min'],[75,'Bis 75 Min'],[90,'Bis 90 Min'],[100,'Bis 100 Min']];
 const DAYN=['Mo','Di','Mi','Do','Fr','Sa','So'];
 const DAYL=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
 const PLAN_CATS=new Set(['Beef','Chicken','Lamb','Pork','Seafood','Pasta','Vegetarian','Vegan','Goat','Miscellaneous']);
@@ -935,7 +937,7 @@ function renderProfile(){
   return `<h1>Profil</h1>
   <div class="card">${sum.map(([k,v])=>`<div class="row between" style="padding:5px 0;border-bottom:1px solid var(--line)"><span class="muted small">${k}</span><span class="small" style="text-align:right">${esc(v)}</span></div>`).join('')}
     <button class="btn" style="margin-top:14px" data-a="toOb">Fragen neu beantworten</button></div>
-  <div class="card"><h3>${ic('clock')} Maximale Kochzeit</h3><p class="small muted" style="margin:4px 0 10px">Gilt für Wochenplan und Entdecken. Der Plan wird neu erstellt.</p><div class="seg">${TIMES.map(([v,n])=>`<button class="${S.maxTime===v?'on':''}" data-a="maxTime" data-v="${v}">${v?v+' Min':'Egal'}</button>`).join('')}</div></div>
+  <div class="card"><h3>${ic('clock')} Maximale Kochzeit</h3><p class="small muted" style="margin:4px 0 10px">Gilt für Wochenplan und Entdecken. Der Plan wird neu erstellt.</p><select data-a="maxTimeSel" aria-label="Maximale Kochzeit">${TIMES.map(([v,n])=>`<option value="${v}" ${S.maxTime===v?'selected':''}>${n}</option>`).join('')}</select></div>
   <div class="card"><h3>Preise</h3>
     <p class="small">${LIVE?`Live-Preise vom ${new Date(LIVE.t).toLocaleDateString('de-AT')}: ${lst.length?lst.map(s=>storeById(s).n).join(', '):'keiner deiner Shops enthalten'}.`:'Aktuell werden Schätzpreise verwendet.'}
     ${S.shops.filter(s=>!lst.includes(s)).length?`<br><span class="muted">Geschätzt: ${S.shops.filter(s=>!lst.includes(s)).map(s=>storeById(s).n).join(', ')}</span>`:''}${UI.priceMsg?`<br><span class="bad">Laden fehlgeschlagen: ${esc(UI.priceMsg)}</span>`:''}</p>
@@ -1066,6 +1068,7 @@ app.addEventListener('change',e=>{
   else if(a==='reste')S.reste=t.checked;
   else if(a==='pantry')S.pantry=t.checked;
   else if(a==='autoTr'){S.autoTr=t.checked;if(S.autoTr)translateTitles(S.plan.map(s=>RM[s.rid]));}
+  else if(a==='maxTimeSel'){S.maxTime=+t.value;if(MEALS.length){generatePlan();toast(S.plan.length?'Plan neu erstellt':'Keine Rezepte in dieser Zeit');translateTitles(S.plan.map(x=>RM[x.rid]));}}
   else if(a==='exAll'){S.exAll=t.checked;S.exN=40;}
   else return;
   const ov=document.querySelector('.overlay'),st=ov?ov.scrollTop:0;
