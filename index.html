@@ -144,12 +144,21 @@ input[type=text],input[type=search],select{font:inherit;color:var(--ink);backgro
 .warn{background:var(--red-soft);color:var(--red);border-radius:12px;padding:10px 12px;font-size:.88rem;margin-bottom:12px}
 .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:50;font-size:.9rem}
 a{color:var(--brown)}
+.ico{width:1em;height:1em;vertical-align:-.14em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.tile .e,.kitchen button .e{display:inline-flex;color:var(--brown)}
+.kitchen button .e{color:inherit}
+.globe,.basket{color:var(--brown)}
+.einkauf .deco{color:var(--yellow);opacity:.55}
+.iconbtn{display:inline-flex;align-items:center;justify-content:center}
+.iconbtn.on{color:var(--red)}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
 "use strict";
+const ICONS={'zap':'<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/>', 'bowl':'<path d="M3 11h18a9 9 0 0 1-18 0z"/><path d="M7 11c0-3 2-5 5-5"/><path d="M12 11c0-2.5 1.5-4.5 4-5"/>', 'users':'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.3"/><path d="M16 14.2c2.8.3 5 2.7 5 5.8"/>', 'apple':'<path d="M12 7c-3-2-8-1-8 5 0 4 3 9 5 9 1 0 2-.6 3-.6s2 .6 3 .6c2 0 5-5 5-9 0-6-5-7-8-5z"/><path d="M12 7c0-2 1-4 3-4"/>', 'burger':'<path d="M4 10c0-3.3 3.6-6 8-6s8 2.7 8 6z"/><path d="M3 14h18"/><path d="M4 17h16a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/>', 'dumbbell':'<path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/>', 'branch':'<path d="M4 20C10 14 14 10 20 4"/><ellipse cx="9" cy="11" rx="2" ry="3.5" transform="rotate(-45 9 11)"/><ellipse cx="15" cy="13" rx="2" ry="3.5" transform="rotate(45 15 13)"/>', 'asia':'<path d="M3 12h18a9 8 0 0 1-18 0z"/><path d="M8 9l7-7M12 9l7-6"/>', 'pot':'<path d="M4 9h16v7a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M2 9h20M9 6c0-1.5 1.3-2.5 3-2.5S15 4.5 15 6"/>', 'utensils':'<path d="M7 3v8a2 2 0 0 0 2 2v8M5 3v5a2 2 0 0 0 2 2M9 3v5a2 2 0 0 1-2 2"/><path d="M17 21V3c-2 1-3 4-3 8h3"/>', 'leaf':'<path d="M5 19c0-8 5-14 15-15-1 10-7 15-15 15z"/><path d="M5 19l8-8"/>', 'sprout':'<path d="M12 21v-9"/><path d="M12 12c0-4 3-7 7-7 0 4-3 7-7 7z"/><path d="M12 14c0-3-2.5-5.5-6-5.5 0 3 2.5 5.5 6 5.5z"/>', 'fish':'<path d="M5 12c2.5-3.5 6-5.5 9.5-5.5S20.5 9 22 12c-1.5 3-4 5.5-7.5 5.5S7.5 15.5 5 12z"/><path d="M5 12 2 9v6z"/><circle cx="17" cy="11" r="1" fill="currentColor" stroke="none"/>', 'meat':'<path d="M15 4c3 0 6 2.5 5 6.5-1 4-5 9-10 9.5-4 .4-6-2-6-4.5 0-3 3-3.5 4-6.5S12 4 15 4z"/><circle cx="14" cy="9" r="1.6"/>', 'mushroom':'<path d="M3 12a9 7 0 0 1 18 0z"/><path d="M9 12v6a3 3 0 0 0 6 0v-6"/>', 'shell':'<path d="M12 20 4 10a8 8 0 0 1 16 0z"/><path d="M12 20V5M12 20 8 6.5M12 20l4-13.5"/>', 'olive':'<ellipse cx="11" cy="14" rx="5" ry="6.5" transform="rotate(20 11 14)"/><path d="M13 7.5c1-2.5 3-4 6-4.5"/>', 'flame':'<path d="M12 3c1 4 6 6 6 11a6 6 0 0 1-12 0c0-3 2-4 2-7 2 1 3 3 3 5 1-2 1-6 1-9z"/>', 'cube':'<path d="M12 3 21 8v8l-9 5-9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/>', 'eggplant':'<path d="M14 7c4 1 6 5 4 9s-7 6-10 4-3-7 0-10c2-2 3-3 6-3z"/><path d="M14 7c0-2 1-3 3-4"/>', 'coconut':'<circle cx="12" cy="12" r="8"/><circle cx="9.5" cy="10" r=".9" fill="currentColor" stroke="none"/><circle cx="13" cy="9" r=".9" fill="currentColor" stroke="none"/><circle cx="11.5" cy="12.5" r=".9" fill="currentColor" stroke="none"/>', 'herb':'<path d="M12 21V9"/><path d="M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zM12 10c0-3 2-5 5-5 0 3-2 5-5 5zM12 17c2.5 0 4.5-1.8 4.5-4.5-2.5 0-4.5 1.8-4.5 4.5z"/>', 'peanut':'<path d="M10 3a4 4 0 0 1 4 5.5 4.5 4.5 0 1 1-5 7A4 4 0 0 1 6 9a4 4 0 0 1 4-6z"/>', 'acorn':'<path d="M5 10h14a7 9 0 0 1-14 0z"/><path d="M4 10c0-3 3.5-5 8-5s8 2 8 5M12 5V3"/>', 'milk':'<path d="M8 2h8M9 2v4l-3 4v12h12V10l-3-4V2"/><path d="M6 13h12"/>', 'egg':'<path d="M12 3c4 0 7 6 7 11a7 7 0 0 1-14 0c0-5 3-11 7-11z"/>', 'wheat':'<path d="M12 22V8"/><path d="M12 12c-3 0-4-2-4-4 2 0 4 1 4 4zm0 0c3 0 4-2 4-4-2 0-4 1-4 4zm0 4c-3 0-4-2-4-4 2 0 4 1 4 4zm0 0c3 0 4-2 4-4-2 0-4 1-4 4zM12 8c-1.5-1-1.5-3 0-5 1.5 2 1.5 4 0 5z"/>', 'bean':'<path d="M8 4c4-1 8 2 8 6 0 3 3 3 3 6 0 3-3 5-6 4-5-1-9-6-9-10 0-3 2-5 4-6z"/>', 'seeds':'<ellipse cx="8" cy="9" rx="2" ry="3.2" transform="rotate(-25 8 9)"/><ellipse cx="15.5" cy="8" rx="2" ry="3.2" transform="rotate(20 15.5 8)"/><ellipse cx="12" cy="16" rx="2" ry="3.2" transform="rotate(5 12 16)"/>', 'stove':'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="2.5"/><circle cx="15.5" cy="10" r="2.5"/><path d="M7 16h10"/>', 'oven':'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 8h18"/><rect x="7" y="11" width="10" height="7" rx="1"/><path d="M7 5.5h.01M11 5.5h.01"/>', 'airfryer':'<path d="M6 4h12a2 2 0 0 1 2 2v12a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2z"/><path d="M4 12h16M10 16h4"/><circle cx="12" cy="8" r="1.5"/>', 'blender':'<path d="M7 3h10l-1.5 11h-7z"/><path d="M8 14h8l1 7H7z"/><path d="M17 5h2v5h-2.3"/><path d="M11 18h2"/>', 'search':'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>', 'heart':'<path d="M12 20s-8-4.5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 9c0 6.5-8 11-8 11z"/>', 'heartf':'<path style="fill:var(--red);stroke:var(--red)" d="M12 20s-8-4.5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 9c0 6.5-8 11-8 11z"/>', 'user':'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>', 'pin':'<path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>', 'globe':'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3z"/>', 'cart':'<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h11.5l2-8H6.3"/>', 'basket':'<path d="M3 10h18l-2 10H5z"/><path d="M8 10l3-6M16 10l-3-6M9 14v3M12 14v3M15 14v3"/>', 'clock':'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 'swap':'<path d="M20 11a8 8 0 0 0-14.5-4.5L4 8"/><path d="M4 3v5h5"/><path d="M4 13a8 8 0 0 0 14.5 4.5L20 16"/><path d="M20 21v-5h-5"/>', 'dice':'<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/>', 'share':'<path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>', 'translate':'<path d="M4 5h9M8.5 3v2M6 5c1 4 3.5 6.5 6 8M11 5c-1 4-3.5 7-7 9"/><path d="m13 21 4-9 4 9M14.5 18h5"/>', 'pan':'<circle cx="10" cy="13" r="7"/><path d="M17 13h5"/>', 'knife':'<path d="M3 21 15 9l3 3-9 6z"/><path d="m15 9 4-4a2 2 0 0 1 3 3l-4 4"/>', 'whisk':'<path d="M3 11h18a9 7 0 0 1-18 0z"/><path d="M14 3l-3 9"/>', 'list':'<path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>', 'back':'<path d="M15 5l-7 7 7 7"/>', 'x':'<path d="M6 6l12 12M18 6 6 18"/>', 'check':'<path d="M5 12.5 10 17 19 7"/>'};
+const ic=(n,c)=>`<svg class="ico${c?" "+c:""}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||""}</svg>`;
 /* =========================================================
    Zutaten-Datenbank: ordnet TheMealDB-Zutaten (englisch) österreichischen
    Produkten zu. Felder: englische Namen | deutscher Name | Basiseinheit |
@@ -468,13 +477,13 @@ function region(plz){
 const storeOK=st=>!st.reg||st.reg.includes(S.plz[0]);
 
 /* ---------- Auswahloptionen ---------- */
-const APPETITE=[['schnell','Schnelle Gerichte','⚡','Schnelles Gericht'],['kalorienarm','Kalorienarm','🥗','Kalorienarm'],['familie','Familienlieblinge','👨‍👩‍👧','Familienliebling'],
-  ['wohlfuehl','Gesundes Wohlfühlessen','🥕','Wohlfühlessen'],['lieferdienst','Lieferdienst, selbst gemacht','🍔','Lieferdienst-Klassiker'],['eiweiss','Eiweißreich','💪','Eiweißreich'],
-  ['mediterran','Mediterran','🫒','Mediterran'],['asiatisch','Asiatisch inspiriert','🥢','Asiatisch'],['deftig','Deftige Hausmannskost','🥘','Deftig']];
-const DIETS=[['keine','Keine','🍽️'],['veg','Vegetarisch','🥦'],['vegan','Vegan','🌱'],['pesc','Pescetarisch','🐟']];
-const DISLIKES=[['pk','Schwein','🐖'],['bf','Rind','🐄'],['la','Lamm','🐑'],['mu','Champignons','🍄'],['s','Meeresfrüchte','🦐'],['ol','Oliven','🫒'],['hot','Scharfes Essen','🌶️'],['to','Tofu','⬜'],['au','Melanzani','🍆'],['co','Kokos','🥥'],['kz','Koriander','🌿']];
-const ALLERGIES=[['pn','Erdnüsse','🥜'],['n','Nüsse','🌰'],['d','Milchprodukte','🥛'],['e','Eier','🥚'],['gl','Weizen / Gluten','🌾'],['so','Soja','🫘'],['f','Fisch','🐟'],['s','Schalentiere','🦞'],['se','Sesam','⚪']];
-const TOOLS=[['herd','Herd','🍳'],['backofen','Backofen','🔲'],['airfryer','Heißluftfritteuse','🌀'],['mixer','Mixer / Pürierstab','🥤']];
+const APPETITE=[['schnell','Schnelle Gerichte','zap','Schnelles Gericht'],['kalorienarm','Kalorienarm','bowl','Kalorienarm'],['familie','Familienlieblinge','users','Familienliebling'],
+  ['wohlfuehl','Gesundes Wohlfühlessen','apple','Wohlfühlessen'],['lieferdienst','Lieferdienst, selbst gemacht','burger','Lieferdienst-Klassiker'],['eiweiss','Eiweißreich','dumbbell','Eiweißreich'],
+  ['mediterran','Mediterran','branch','Mediterran'],['asiatisch','Asiatisch inspiriert','asia','Asiatisch'],['deftig','Deftige Hausmannskost','pot','Deftig']];
+const DIETS=[['keine','Keine','utensils'],['veg','Vegetarisch','leaf'],['vegan','Vegan','sprout'],['pesc','Pescetarisch','fish']];
+const DISLIKES=[['pk','Schwein','meat'],['bf','Rind','meat'],['la','Lamm','meat'],['mu','Champignons','mushroom'],['s','Meeresfrüchte','shell'],['ol','Oliven','olive'],['hot','Scharfes Essen','flame'],['to','Tofu','cube'],['au','Melanzani','eggplant'],['co','Kokos','coconut'],['kz','Koriander','herb']];
+const ALLERGIES=[['pn','Erdnüsse','peanut'],['n','Nüsse','acorn'],['d','Milchprodukte','milk'],['e','Eier','egg'],['gl','Weizen / Gluten','wheat'],['so','Soja','bean'],['f','Fisch','fish'],['s','Schalentiere','shell'],['se','Sesam','seeds']];
+const TOOLS=[['herd','Herd','stove'],['backofen','Backofen','oven'],['airfryer','Heißluftfritteuse','airfryer'],['mixer','Mixer / Pürierstab','blender']];
 const DAYN=['Mo','Di','Mi','Do','Fr','Sa','So'];
 const DAYL=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
 const PLAN_CATS=new Set(['Beef','Chicken','Lamb','Pork','Seafood','Pasta','Vegetarian','Vegan','Goat','Miscellaneous']);
@@ -757,9 +766,9 @@ const fmtPack=(I,q)=>I.u==='stk'?q+' Stk':q>=1000?String(q/1000).replace('.',','
 const imgSm=r=>r.img?r.img+'/preview':'';
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200);}
 function stepKind(t){t=t.toLowerCase();
-  if(/oven|bake|roast|grill/.test(t))return ['♨️','Backen'];if(/fry|brown|sear|sauté|saute|sizzle/.test(t))return ['🍳','Braten'];
-  if(/boil|simmer|cook|stew/.test(t))return ['🍲','Kochen'];if(/chop|slice|dice|cut|peel|grate|mince/.test(t))return ['🔪','Schneiden'];
-  if(/mix|stir|whisk|combine|toss|blend/.test(t))return ['🥣','Mischen'];if(/serve|garnish|plate/.test(t))return ['🍽️','Servieren'];return ['📝','Vorbereiten'];}
+  if(/oven|bake|roast|grill/.test(t))return ['oven','Backen'];if(/fry|brown|sear|sauté|saute|sizzle/.test(t))return ['pan','Braten'];
+  if(/boil|simmer|cook|stew/.test(t))return ['pot','Kochen'];if(/chop|slice|dice|cut|peel|grate|mince/.test(t))return ['knife','Schneiden'];
+  if(/mix|stir|whisk|combine|toss|blend/.test(t))return ['whisk','Mischen'];if(/serve|garnish|plate/.test(t))return ['utensils','Servieren'];return ['list','Vorbereiten'];}
 
 /* ---------- Rendering ---------- */
 const app=document.getElementById('app');
@@ -781,22 +790,22 @@ function obShell(inner,btnTxt,ok,act){
   <div class="footer"><div><button class="btn" data-a="${act||'obNext'}" ${ok?'':'disabled'}>${btnTxt}</button></div></div>`;
 }
 function tiles(list,sel,act,cls){
-  return `<div class="grid2 ${cls||''}">${list.map(([id,n,e])=>`<button class="tile ${sel.includes(id)?'on':''}" data-a="${act}" data-v="${id}"><span class="e">${e}</span>${n}</button>`).join('')}</div>`;
+  return `<div class="grid2 ${cls||''}">${list.map(([id,n,e])=>`<button class="tile ${sel.includes(id)?'on':''}" data-a="${act}" data-v="${id}"><span class="e">${ic(e)}</span>${n}</button>`).join('')}</div>`;
 }
 function renderOb(){
   const s=OB[S.ob];
   if(s==='plz'){const reg=region(S.plz);
     return obShell(`<h1>Wie lautet deine PLZ?</h1><p class="sub">Damit wir die Supermärkte in deiner Region finden.</p>
       <input id="plz" class="plz" inputmode="numeric" autocomplete="postal-code" maxlength="4" placeholder="1010" value="${esc(S.plz)}">
-      <p class="small muted" id="reg" style="text-align:center">${reg?'📍 '+reg:'4-stellige österreichische Postleitzahl'}</p>`,'Weiter',!!reg);}
-  if(s==='locate')return `<div class="globe">🌍</div><p class="serif" style="text-align:center;font-size:1.2rem">Lokalisiere ${esc(S.plz)}…</p><p class="muted small" style="text-align:center">${region(S.plz)}</p>`;
-  if(s==='shops')return obShell(`<h1>Wo kaufst du ein?</h1><p class="sub">📍 ${esc(S.plz)} · ${region(S.plz)}<br>Wähle deine Supermärkte. Wir rechnen nur mit diesen Preisen.</p>
-    <div class="grid2">${STORES.map(st=>{const ok=storeOK(st);return `<button class="tile ${S.shops.includes(st.id)?'on':''}" data-a="shop" data-v="${st.id}" ${ok?'':'disabled'}><span class="e">🛒</span>${st.n}${ok?'':'<span class="tiny muted">nicht in deiner Region</span>'}</button>`;}).join('')}</div>`,'Weiter',S.shops.length>0);
+      <p class="small muted" id="reg" style="text-align:center">${reg?ic('pin')+' '+reg:'4-stellige österreichische Postleitzahl'}</p>`,'Weiter',!!reg);}
+  if(s==='locate')return `<div class="globe">${ic("globe")}</div><p class="serif" style="text-align:center;font-size:1.2rem">Lokalisiere ${esc(S.plz)}…</p><p class="muted small" style="text-align:center">${region(S.plz)}</p>`;
+  if(s==='shops')return obShell(`<h1>Wo kaufst du ein?</h1><p class="sub">${ic("pin")} ${esc(S.plz)} · ${region(S.plz)}<br>Wähle deine Supermärkte. Wir rechnen nur mit diesen Preisen.</p>
+    <div class="grid2">${STORES.map(st=>{const ok=storeOK(st);return `<button class="tile ${S.shops.includes(st.id)?'on':''}" data-a="shop" data-v="${st.id}" ${ok?'':'disabled'}><span class="e">${ic("cart")}</span>${st.n}${ok?'':'<span class="tiny muted">nicht in deiner Region</span>'}</button>`;}).join('')}</div>`,'Weiter',S.shops.length>0);
   if(s==='who')return obShell(`<h1>Für wen kochst du?</h1><p class="sub">Die Portionen passen wir automatisch an.</p>
     <div class="card"><p class="muted small" style="text-align:center;margin:0 0 10px">Erwachsene</p><div class="stepper"><button data-a="dec" data-k="adults">−</button><b>${S.adults}</b><button data-a="inc" data-k="adults">+</button></div></div>
     <div class="card"><p class="muted small" style="text-align:center;margin:0 0 10px">Kinder</p><div class="stepper"><button data-a="dec" data-k="kids">−</button><b>${S.kids}</b><button data-a="inc" data-k="kids">+</button></div></div>`,'Weiter',S.adults>0);
   if(s==='days')return obShell(`<h1>An welchen Tagen kochst du normalerweise?</h1><p class="sub">Wir planen nur Abendessen für diese Tage.</p>
-    <div class="days">${DAYN.map((d,i)=>`<button class="${S.days.includes(i)?'on':''}" data-a="day" data-v="${i}">${d}<i>${S.days.includes(i)?'✓':''}</i></button>`).join('')}</div>`,'Weiter',S.days.length>0);
+    <div class="days">${DAYN.map((d,i)=>`<button class="${S.days.includes(i)?'on':''}" data-a="day" data-v="${i}">${d}<i>${S.days.includes(i)?ic('check'):''}</i></button>`).join('')}</div>`,'Weiter',S.days.length>0);
   if(s==='budget')return obShell(`<h1>Wie hoch ist dein Wochenbudget?</h1><p class="sub">Für ${S.days.length} Abendessen und ${persons()} ${persons()===1?'Person':'Personen'}.</p>
     <div class="bignum" id="bn">${S.budget} €</div><p class="muted small" style="text-align:center">pro Woche</p>
     <input type="range" id="budget" min="15" max="250" step="1" value="${S.budget}"><div class="row between tiny muted"><span>15 €</span><span>250 €</span></div>`,'Weiter',true);
@@ -805,7 +814,7 @@ function renderOb(){
   if(s==='dislikes')return obShell(`<h1>Gibt es etwas, das du nicht isst?</h1><p class="sub">Wähle alles aus, was nicht auf den Teller soll.</p>${tiles(DISLIKES,S.dislikes,'dis','list-tiles')}`,S.dislikes.length?'Weiter':'Ich esse alles',true);
   if(s==='allergies')return obShell(`<h1>Allergien?</h1><p class="sub">Rezepte mit diesen Zutaten schließen wir aus. Prüfe trotzdem immer die Zutatenliste.</p>${tiles(ALLERGIES,S.allergies,'all')}`,S.allergies.length?'Weiter':'Keine Allergien — weiter',true);
   if(s==='kitchen')return obShell(`<h1>Was hast du in deiner Küche?</h1><p class="sub">Tippe auf deine Geräte. Wir zeigen nur Rezepte, die du damit kochen kannst.</p>
-    <div class="kitchen">${TOOLS.map(([id,n,e])=>`<button class="${S.tools.includes(id)?'on':''}" data-a="tool" data-v="${id}"><span class="e">${e}</span>${n}</button>`).join('')}</div>
+    <div class="kitchen">${TOOLS.map(([id,n,e])=>`<button class="${S.tools.includes(id)?'on':''}" data-a="tool" data-v="${id}"><span class="e">${ic(e)}</span>${n}</button>`).join('')}</div>
     <p class="tiny muted" style="margin-top:-6px">Ohne Backofen ersetzt die Heißluftfritteuse ihn, wo möglich.</p>
     <div class="card"><label class="switch"><input type="checkbox" data-a="reste" ${S.reste?'checked':''}><span><b>Platz für Reste?</b><br><span class="small muted">Wir kochen doppelt und planen am Folgetag Reste ein. Spart Zeit und Geld.</span></span></label></div>
     <div class="card"><label class="switch"><input type="checkbox" data-a="pantry" ${S.pantry?'checked':''}><span><b>Grundzutaten vorhanden</b><br><span class="small muted">Salz, Pfeffer, Öl, Zucker, Mehl-Backzutaten & Gewürze nicht einrechnen.</span></span></label></div>`,
@@ -813,9 +822,9 @@ function renderOb(){
   return '';
 }
 function renderLoading(){
-  return `<div class="brand" style="margin-top:20px">🍽️ Kochbudget</div><h1 style="text-align:center">Wir stellen deine Woche zusammen…</h1>
-  <div class="basket">🧺</div>
-  <ul class="checks">${UI.loadSteps.map(s=>`<li class="${s.st}"><i>${s.st==='done'?'✓':s.st==='fail'?'!':''}</i><span>${s.t}</span></li>`).join('')}</ul>`;
+  return `<div class="brand" style="margin-top:20px">${ic("utensils")} Kochbudget</div><h1 style="text-align:center">Wir stellen deine Woche zusammen…</h1>
+  <div class="basket">${ic("basket")}</div>
+  <ul class="checks">${UI.loadSteps.map(s=>`<li class="${s.st}"><i>${s.st==='done'?ic('check'):s.st==='fail'?'!':''}</i><span>${s.t}</span></li>`).join('')}</ul>`;
 }
 async function build(){
   S.screen='loading';
@@ -845,12 +854,12 @@ async function build(){
 function renderMain(){
   let h='';
   if(S.tab==='plan')h=renderPlan();else if(S.tab==='explore')h=renderExplore();else if(S.tab==='favs')h=renderFavs();else h=renderProfile();
-  return h+`<nav class="nav"><div>${[['plan','🍴','Plan'],['explore','🔍','Entdecken'],['favs','♥','Favoriten'],['profile','👤','Profil']].map(([v,i,n])=>`<button class="${S.tab===v?'on':''}" data-a="tab" data-v="${v}"><i>${i}</i>${n}</button>`).join('')}</div></nav>`;
+  return h+`<nav class="nav"><div>${[['plan','utensils','Plan'],['explore','search','Entdecken'],['favs','heart','Favoriten'],['profile','user','Profil']].map(([v,i,n])=>`<button class="${S.tab===v?'on':''}" data-a="tab" data-v="${v}"><i>${ic(i)}</i>${n}</button>`).join('')}</div></nav>`;
 }
 function greet(){const h=new Date().getHours();return h<11?'Guten Morgen!':h<17?'Guten Tag!':'Guten Abend!';}
 function renderPlan(){
   if(!MEALS.length)return `<div class="card">Rezepte werden geladen…</div>`;
-  if(!S.plan.length)return `<div class="brand">🍽️ Kochbudget</div><h1 class="hello">${greet()}</h1><div class="card">Für deine Angaben gibt es keinen Plan. <button class="btn sm" data-a="toOb">Angaben ändern</button></div>`;
+  if(!S.plan.length)return `<div class="brand">${ic("utensils")} Kochbudget</div><h1 class="hello">${greet()}</h1><div class="card">Für deine Angaben gibt es keinen Plan. <button class="btn sm" data-a="toOb">Angaben ändern</button></div>`;
   const st=planStore(),ent=planEntries(),L=buildList(ent,st),tot=L.total,over=tot>S.budget;
   const cmp=S.shops.map(s=>({s,c:buildList(ent,s).total})).sort((a,b)=>a.c-b.c);
   const counts={};L.items.filter(i=>!i.pantry).forEach(i=>counts[i.aisle]=(counts[i.aisle]||0)+1);
@@ -858,12 +867,12 @@ function renderPlan(){
   const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,4);
   const pct=Math.min(1,tot/S.budget),C=2*Math.PI*34;
   const cooks=S.plan.filter(s=>s.cook).length;
-  return `<div class="brand">🍽️ Kochbudget</div><h1 class="hello">${greet()}</h1>
+  return `<div class="brand">${ic("utensils")} Kochbudget</div><h1 class="hello">${greet()}</h1>
   <div class="planfor small muted">geplant für <select data-a="planStore" aria-label="Supermarkt">${cmp.map(x=>`<option value="${x.s}" ${x.s===st?'selected':''}>${storeById(x.s).n}</option>`).join('')}</select></div>
   <div class="einkauf" data-a="openList">
-    <span class="deco" style="left:8%;top:8%">🌶️</span><span class="deco" style="left:32%;top:14%">🧄</span><span class="deco" style="left:18%;top:42%">🌿</span><span class="deco" style="left:40%;top:46%">🍅</span>
+    <span class="deco" style="left:8%;top:8%">${ic("flame")}</span><span class="deco" style="left:32%;top:14%">${ic("herb")}</span><span class="deco" style="left:20%;top:40%">${ic("leaf")}</span><span class="deco" style="left:38%;top:44%">${ic("olive")}</span>
     <div class="txt"><h2 style="color:#fff;margin:0">Einkauf</h2><div class="small" style="opacity:.85">${nItems} Artikel nach Gang</div><span class="pill">Liste öffnen →</span></div>
-    <div class="receipt"><b>🛒 ${storeById(st).n}</b>${top.map(([a,c])=>`<div class="r"><span>${AISLE[a]}</span><span>${c}</span></div>`).join('')}
+    <div class="receipt"><b>${ic("cart")} ${storeById(st).n}</b>${top.map(([a,c])=>`<div class="r"><span>${AISLE[a]}</span><span>${c}</span></div>`).join('')}
       <div class="r tot"><span>${nItems} Artikel</span><span>${eurR(tot)}</span></div><div class="barcode"></div></div>
   </div>
   <div class="card ring">
@@ -871,19 +880,19 @@ function renderPlan(){
       <circle cx="42" cy="42" r="34" fill="none" stroke="${over?'var(--red)':'var(--yellow)'}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*pct} ${C}" transform="rotate(-90 42 42)"/>
       <text x="42" y="47" text-anchor="middle" font-family="Fraunces,Georgia,serif" font-weight="700" font-size="16" fill="var(--ink)">${eurR(tot)}</text></svg>
     <div class="grow"><h3>Plankosten</h3><div class="small muted">${cooks} Mal kochen, ${S.plan.length} Abendessen für ${eurR(tot)}</div>
-      <div class="small ${over?'bad':'ok'}">${over?'✕':'✓'} Budget: ${S.budget} €${over?` (${eurR(tot-S.budget)} drüber)`:''}</div>
+      <div class="small ${over?'bad':'ok'}">${ic(over?'x':'check')} Budget: ${S.budget} €${over?` (${eurR(tot-S.budget)} drüber)`:''}</div>
       ${cmp.length>1?`<details class="small" style="margin-top:6px"><summary class="muted" style="cursor:pointer">Deine Shops vergleichen</summary><div class="cmp" style="margin-top:6px">${cmp.map((x,i)=>`<span class="${i===0?'best':''}">${storeById(x.s).n}${liveStores().includes(x.s)?'<span class="livedot" title="Live-Preise"></span>':''}</span><span class="${i===0?'best':''}">${eur(x.c)}</span>`).join('')}</div></details>`:''}
     </div>
   </div>
-  <div class="row between" style="margin:18px 0 10px"><div><h2 style="margin:0">Deine Woche</h2><div class="small muted">${S.plan.length} Kochabende</div></div><button class="btn sm ghost" data-a="reroll">🎲 Neu</button></div>
+  <div class="row between" style="margin:18px 0 10px"><div><h2 style="margin:0">Deine Woche</h2><div class="small muted">${S.plan.length} Kochabende</div></div><button class="btn sm ghost" data-a="reroll">${ic("dice")} Neu</button></div>
   ${S.plan.map((s,i)=>{const r=RM[s.rid];if(!r)return '';const dt=weekDate(s.d);
     if(!s.cook)return `<div class="day left" data-a="open" data-v="${r.id}"><div class="strip"><small>${DAYN[s.d].toUpperCase()}</small><b>${dt.getDate()}</b></div>
       <div class="body"><img class="thumb" src="${imgSm(r)}" alt="" loading="lazy" style="opacity:.6"><div class="grow"><div class="small muted">Reste vom Vortag</div><div class="ttl">${esc(title(r))}</div><div class="meta">0 € extra</div></div></div></div>`;
     const c=recipeCost(r,st,portions()*s.mult);const tag=tagOf(r);
     return `<div class="day" data-a="open" data-v="${r.id}"><div class="strip"><small>${DAYN[s.d].toUpperCase()}</small><b>${dt.getDate()}</b></div>
       <div class="body"><img class="thumb" src="${imgSm(r)}" alt="" loading="lazy"><div class="grow"><div class="ttl">${esc(title(r))}</div>${tag?`<span class="tag">${tag}</span>`:''}
-      <div class="meta">⏱ ${r.time} Min | 👤 ${persons()}${s.mult>1?' ×2':''} | ${eurR(c)}</div></div>
-      <button class="iconbtn" data-a="swap" data-v="${i}" aria-label="Gericht tauschen">🔄</button></div></div>`;}).join('')}
+      <div class="meta">${ic("clock")} ${r.time} Min | ${ic("user")} ${persons()}${s.mult>1?' ×2':''} | ${eurR(c)}</div></div>
+      <button class="iconbtn" data-a="swap" data-v="${i}" aria-label="Gericht tauschen">${ic("swap")}</button></div></div>`;}).join('')}
   <p class="note">Rezepte: TheMealDB · Preise: ${liveStores().length?'heisse-preise.io (Live) + Schätzungen':'Schätzungen'} · Salz, Öl & Gewürze ${S.pantry?'nicht ':''}eingerechnet</p>`;
 }
 function exploreList(){
@@ -897,8 +906,8 @@ function exploreCards(){
   if(!rs.length)return `<div class="card muted">Nichts gefunden.</div>`;
   const shown=rs.slice(0,S.exN);
   return `<p class="small muted">${rs.length} Rezepte</p>`+shown.map(r=>`<div class="day" data-a="open" data-v="${r.id}" data-from="explore"><div class="body"><img class="thumb" src="${imgSm(r)}" alt="" loading="lazy">
-    <div class="grow"><div class="ttl">${esc(title(r))}</div>${tagOf(r)?`<span class="tag">${tagOf(r)}</span>`:''}<div class="meta">⏱ ${r.time} Min | ${eurR(recipeCost(r,st))} bei ${storeById(st).n}${eligible(r)?'':' | <span class="bad">passt nicht zu deinen Angaben</span>'}</div></div>
-    <button class="iconbtn" data-a="fav" data-v="${r.id}" aria-label="Favorit">${S.favs.includes(r.id)?'♥':'♡'}</button></div></div>`).join('')+
+    <div class="grow"><div class="ttl">${esc(title(r))}</div>${tagOf(r)?`<span class="tag">${tagOf(r)}</span>`:''}<div class="meta">${ic("clock")} ${r.time} Min | ${eurR(recipeCost(r,st))} bei ${storeById(st).n}${eligible(r)?'':' | <span class="bad">passt nicht zu deinen Angaben</span>'}</div></div>
+    <button class="iconbtn" data-a="fav" data-v="${r.id}" aria-label="Favorit">${S.favs.includes(r.id)?ic('heartf'):ic('heart')}</button></div></div>`).join('')+
     (rs.length>S.exN?`<button class="btn ghost" data-a="more">Mehr anzeigen</button>`:'');
 }
 function renderExplore(){
@@ -911,8 +920,8 @@ function renderExplore(){
 function renderFavs(){
   const rs=S.favs.map(id=>RM[id]).filter(Boolean),st=planStore();
   return `<h1>Favoriten</h1>${rs.length?rs.map(r=>`<div class="day" data-a="open" data-v="${r.id}" data-from="explore"><div class="body"><img class="thumb" src="${imgSm(r)}" alt="" loading="lazy">
-    <div class="grow"><div class="ttl">${esc(title(r))}</div><div class="meta">⏱ ${r.time} Min | ${eurR(recipeCost(r,st))}</div></div><button class="iconbtn" data-a="fav" data-v="${r.id}">♥</button></div></div>`).join('')
-    :`<div class="card muted">Tippe bei einem Rezept auf ♡, um es hier zu speichern.</div>`}`;
+    <div class="grow"><div class="ttl">${esc(title(r))}</div><div class="meta">${ic("clock")} ${r.time} Min | ${eurR(recipeCost(r,st))}</div></div><button class="iconbtn" data-a="fav" data-v="${r.id}" aria-label="Favorit entfernen">${ic("heartf")}</button></div></div>`).join('')
+    :`<div class="card muted">Tippe bei einem Rezept auf ${ic("heart")}, um es hier zu speichern.</div>`}`;
 }
 function renderProfile(){
   const lst=liveStores();
@@ -942,11 +951,11 @@ function renderDetail(){
   const steps=trSteps||r.steps;
   const planIdx=S.plan.findIndex(s=>s.cook&&s.rid===r.id);
   return `<div class="overlay"><div class="in">
-  <div class="hero">${r.img?`<img src="${r.img}" alt="">`:''}<button class="iconbtn" style="left:14px" data-a="close">←</button><button class="iconbtn" style="right:14px" data-a="fav" data-v="${r.id}">${S.favs.includes(r.id)?'♥':'♡'}</button></div>
+  <div class="hero">${r.img?`<img src="${r.img}" alt="">`:''}<button class="iconbtn" style="left:14px" data-a="close" aria-label="Zurück">${ic("back")}</button><button class="iconbtn" style="right:14px" data-a="fav" data-v="${r.id}" aria-label="Favorit">${S.favs.includes(r.id)?ic('heartf'):ic('heart')}</button></div>
   <div class="pad">
     <h1>${esc(title(r))}</h1>${TR[r.n]?`<div class="tiny muted">${esc(r.n)}</div>`:''}
     <div style="margin:6px 0 10px">${tagOf(r)?`<span class="tag">${tagOf(r)}</span>`:''}<span class="tag" style="background:var(--chip);color:var(--muted)">${esc(r.area)}</span><span class="tag" style="background:var(--chip);color:var(--muted)">${esc(r.cat)}</span></div>
-    <div class="meta">⏱ ca. ${r.time} Min | 👤 ${persons()} ${persons()===1?'Person':'Personen'}</div>
+    <div class="meta">${ic("clock")} ca. ${r.time} Min | ${ic("user")} ${persons()} ${persons()===1?'Person':'Personen'}</div>
     ${!eligible(r)?`<div class="warn" style="margin-top:10px">Dieses Rezept passt nicht zu deinen Angaben (Ernährung, Allergien oder Küche).</div>`:''}
     ${r.tools.has('backofen')&&!S.tools.includes('backofen')?`<div class="warn" style="margin-top:10px">Braucht einen Backofen. Mit der Heißluftfritteuse geht es meist auch, Zeiten und Mengen ggf. anpassen.</div>`:''}
     <div class="card" style="margin-top:14px"><div class="row between"><h3>Preis</h3><span class="serif" style="font-size:1.4rem;font-weight:700">${eur(cmp[0].c)}</span></div>
@@ -960,9 +969,9 @@ function renderDetail(){
       const a=g.amt*F,pan=S.pantry&&I.f.includes('p');
       return `<div class="ing"><span class="grow">${I.de}${pan?' <span class="tiny muted">(Vorrat)</span>':''}</span><span class="a">${g.tiny?'etwas':fmtAmt(I,a)}</span><span class="a" style="min-width:58px;text-align:right">${pan?'–':eur(a*sp(g.id,st).u)}</span></div>`;}).join('')}
     </div><p class="tiny muted">Preise bei ${storeById(st).n}. Mengen umgerechnet auf ${persons()} ${persons()===1?'Person':'Personen'}.</p>
-    <div class="row between" style="margin-top:20px"><h2 style="margin:0">Zubereitung</h2>${trSteps?'':`<button class="btn sm ghost" data-a="trSteps" data-v="${r.id}" ${UI.trBusy?'disabled':''}>${UI.trBusy?'Übersetze…':'🇦🇹 Übersetzen'}</button>`}</div>
-    <div style="margin-top:12px">${steps.map((t,i)=>{const [ic,k]=stepKind(r.steps[i]||t);return `<div class="step"><div class="ic">${ic}</div><div><small>SCHRITT ${i+1} · ${k.toUpperCase()}</small>${esc(t)}</div></div>`;}).join('')}</div>
-    ${planIdx>=0?`<button class="btn ghost" data-a="swapDetail" data-v="${planIdx}">🔄 Anderes Gericht für ${DAYL[S.plan[planIdx].d]}</button>`:''}
+    <div class="row between" style="margin-top:20px"><h2 style="margin:0">Zubereitung</h2>${trSteps?'':`<button class="btn sm ghost" data-a="trSteps" data-v="${r.id}" ${UI.trBusy?'disabled':''}>${UI.trBusy?'Übersetze…':ic('translate')+' Übersetzen'}</button>`}</div>
+    <div style="margin-top:12px">${steps.map((t,i)=>{const [icn,k]=stepKind(r.steps[i]||t);return `<div class="step"><div class="ic">${ic(icn)}</div><div><small>SCHRITT ${i+1} · ${k.toUpperCase()}</small>${esc(t)}</div></div>`;}).join('')}</div>
+    ${planIdx>=0?`<button class="btn ghost" data-a="swapDetail" data-v="${planIdx}">${ic("swap")} Anderes Gericht für ${DAYL[S.plan[planIdx].d]}</button>`:''}
   </div></div>
   <div class="footer" style="z-index:21"><div><button class="btn y" data-a="cook">Loslegen</button></div></div></div>`;
 }
@@ -972,7 +981,7 @@ function renderList(){
   const open=buy.filter(i=>!S.checked[i.key]).reduce((a,i)=>a+i.cost,0);
   const groups=AISLE_ORDER.map(a=>[a,buy.filter(i=>i.aisle===a).sort((x,y)=>x.name.localeCompare(y.name))]).filter(g=>g[1].length);
   return `<div class="overlay"><div class="in pad">
-    <div class="row between"><button class="iconbtn" data-a="closeList">←</button><h2 style="margin:0">Einkaufsliste</h2><button class="iconbtn" data-a="share" aria-label="Teilen">⤴</button></div>
+    <div class="row between"><button class="iconbtn" data-a="closeList" aria-label="Zurück">${ic("back")}</button><h2 style="margin:0">Einkaufsliste</h2><button class="iconbtn" data-a="share" aria-label="Teilen">${ic("share")}</button></div>
     <div class="card" style="margin-top:14px"><div class="row between"><select data-a="listStore" style="width:auto">${S.shops.map(s=>`<option value="${s}" ${s===st?'selected':''}>${storeById(s).n}</option>`).join('')}</select>
       <div style="text-align:right"><div class="serif" style="font-size:1.4rem;font-weight:700">${eur(L.total)}</div><div class="tiny muted">noch offen: ${eur(open)}</div></div></div></div>
     ${groups.map(([a,items])=>`<div class="aisle">${AISLE[a]}</div>${items.map(i=>`<label class="li ${S.checked[i.key]?'done':''}"><input type="checkbox" data-a="check" data-v="${esc(i.key)}" ${S.checked[i.key]?'checked':''}>
@@ -985,10 +994,10 @@ function renderCook(){
   const r=RM[UI.cook.id];if(!r)return '';
   const steps=TR['steps:'+r.id]||r.steps,i=UI.cook.i;
   return `<div class="cook"><div class="in">
-    <div class="row between"><button class="iconbtn" data-a="cookClose">✕</button><span class="small muted">Schritt ${i+1} von ${steps.length}</span><span style="width:36px"></span></div>
+    <div class="row between"><button class="iconbtn" data-a="cookClose" aria-label="Schließen">${ic("x")}</button><span class="small muted">Schritt ${i+1} von ${steps.length}</span><span style="width:36px"></span></div>
     <div class="dots" style="margin-top:14px">${steps.map((_,j)=>`<span class="${j<=i?'on':''}"></span>`).join('')}</div>
-    <div class="txt"><div style="font-size:2.2rem;margin-bottom:10px">${stepKind(r.steps[i]||steps[i])[0]}</div>${esc(steps[i])}</div>
-    <div class="row"><button class="btn ghost" data-a="cookPrev" ${i===0?'disabled':''}>Zurück</button><button class="btn ${i===steps.length-1?'y':''}" data-a="cookNext">${i===steps.length-1?'Fertig 🎉':'Weiter'}</button></div>
+    <div class="txt"><div style="font-size:2.2rem;margin-bottom:10px;color:var(--brown)">${ic(stepKind(r.steps[i]||steps[i])[0])}</div>${esc(steps[i])}</div>
+    <div class="row"><button class="btn ghost" data-a="cookPrev" ${i===0?'disabled':''}>Zurück</button><button class="btn ${i===steps.length-1?'y':''}" data-a="cookNext">${i===steps.length-1?'Fertig '+ic('check'):'Weiter'}</button></div>
   </div></div>`;
 }
 
@@ -1062,7 +1071,7 @@ app.addEventListener('input',e=>{
   const t=e.target;
   if(t.id==='plz'){
     t.value=t.value.replace(/\D/g,'').slice(0,4);S.plz=t.value;
-    const reg=region(S.plz);document.getElementById('reg').textContent=reg?'📍 '+reg:'4-stellige österreichische Postleitzahl';
+    const reg=region(S.plz);document.getElementById('reg').innerHTML=reg?ic('pin')+' '+reg:'4-stellige österreichische Postleitzahl';
     document.querySelector('[data-a="obNext"]').disabled=!reg;save();
   }
   if(t.id==='budget'){S.budget=+t.value;document.getElementById('bn').textContent=S.budget+' €';save();}
